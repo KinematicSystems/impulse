@@ -5,7 +5,7 @@
 ## Objective
 Attempting to take a product that was developed using Java for the server and Adobe Flex for the client and migrate it to PHP and AngularJS.  
 
-There is nothing useful here at this point but the server code demostrating the use of:
+There is nothing useful here at this point but the server code demonstrating the use of:
 - [Slim Framework 2.4.2](http://www.slimframework.com) for implementing REST web services 
 - [NotORM](http://www.notorm.com/) for mapping arrays to database fields and getting rid of some repetitive PDO code 
 
