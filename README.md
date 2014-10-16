@@ -28,14 +28,15 @@ In the **test** folder run the [PHPUnit](https://phpunit.de/) tests:
 - `phpunit ForumServicePDOTest.php`
 - `phpunit SettingsServicePDOTest.php`
 
+
 ## Web Server Setup
 The web server deployment folder looks like this so far:
-|WebRoot|ProjectRoot|Description|
-|-------|-----------|-----------|
-|/impulse|not mapped|The root directory on the web server| 
-|/impulse/api|/server/src|REST web services API|
-|/impulse/admin|/ui/admin|Admin Application|
-|/impulse/common|/ui/common|Shared UI components|
-|/impulse/vendor|/ui/vendor|Vendor supplied code, AngularJS, Bootstrap, etc.|
-|/impulse/workspace|/ui/workspace|Workspace Collaboration Application|
-|/impulse/index.html|/ui/index.html|Landing Page|
+| WebRoot | ProjectRoot | Description |
+| ------- | ----------- | ----------- |
+| /impulse|not mapped | The root directory on the web server| 
+| /impulse/api|/server/src | REST web services API |
+| /impulse/admin|/ui/admin | Admin Application |
+| /impulse/common|/ui/common | Shared UI components |
+| /impulse/vendor|/ui/vendor | Vendor supplied code, AngularJS, Bootstrap, etc. |
+| /impulse/workspace|/ui/workspace | Workspace Collaboration Application |
+| /impulse/index.html|/ui/index.html | Landing Page |
