@@ -37,11 +37,11 @@ The web server deployment folder looks like this so far (webroot -> source folde
   - REST web services API 
 - /impulse/admin     -> /ui/admin  
   - Admin Application 
- /impulse/common     -> /ui/common  
+- /impulse/common     -> /ui/common  
   - Shared UI components 
- /impulse/vendor     -> /ui/vendor  
+- /impulse/vendor     -> /ui/vendor  
   - Vendor supplied code, AngularJS, Bootstrap, etc. 
- /impulse/workspace  -> /ui/workspace  
+- /impulse/workspace  -> /ui/workspace  
   - Workspace Collaboration Application 
- /impulse/index.html -> /ui/index.html  
+- /impulse/index.html -> /ui/index.html  
   - Landing Page 
