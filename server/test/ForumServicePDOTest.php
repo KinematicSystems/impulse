@@ -139,6 +139,18 @@ class ForumServicePDOTest extends PHPUnit_Framework_TestCase
       PHPUnit_Framework_Assert::assertEquals(1, count($forums));
       PHPUnit_Framework_Assert::assertNotNull($forums[0]['name']);
 
+      // All Enrolled Users for All Forums (admin function)
+      $enrollment = $this->pdo->getAllForumEnrollment();
+      PHPUnit_Framework_Assert::assertGreaterThan(0, count($enrollment));
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['forumId']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['userId']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['enrollmentStatus']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['forumName']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['firstName']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['lastName']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['email']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['lastUpdated']);
+      
       // Change Enrollment Status User in Forum
       $this->pdo->setForumEnrollmentStatus($forumId,SELF::USER_ID,EnrollmentStatus::Joined);
       $enrollmentStatus = $this->pdo->getForumEnrollmentStatus($forumId,SELF::USER_ID);

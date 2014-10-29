@@ -96,17 +96,49 @@ class SettingsServicePDOTest extends PHPUnit_Framework_TestCase
       PHPUnit_Framework_Assert::assertNotNull($ret['value']);
       PHPUnit_Framework_Assert::assertEquals($ret['value'], 
          'UpdatedSettingValue');
+
+      // Delete Test
+      $this->pdo->delete('TestDomain', 'TestSettingKey');
+      $ret = $this->pdo->get('TestDomain', 'TestSettingKey');
+      PHPUnit_Framework_Assert::assertNull($ret);
+      
+      // Create Parent Child Settings
+      $parentSetting = array(
+         'domain' => "ParentDomain",
+         'settingKey' => 'ParentKey',
+         'value' => 'ChildDomain',
+         'type' => 'text',
+         'parent' => null
+      );
+      $ret = $this->pdo->create($parentSetting);
+      PHPUnit_Framework_Assert::assertNotNull($ret);
+      PHPUnit_Framework_Assert::assertEquals($ret['value'], 'ChildDomain');
+
+      $childSetting = array(
+         'domain' => "ChildDomain",
+         'type' => 'text',
+         'parent' => 'ParentDomain'
+      );
+      
+      $childCount = 10;
+      for ($i=1; $i <= $childCount; $i++)
+      {
+         $childSetting['settingKey'] = 'ChildKey.'.$i;
+         $childSetting['value'] = 'ChildValue.'.$i;
+         $ret = $this->pdo->create($childSetting);
+         PHPUnit_Framework_Assert::assertNotNull($ret);
+      }
       
       // All Settings
       $settings = $this->pdo->getAll();
-      PHPUnit_Framework_Assert::assertGreaterThan(6, count($settings));
+      PHPUnit_Framework_Assert::assertGreaterThan($childCount, count($settings));
       PHPUnit_Framework_Assert::assertNotNull($settings[0]['domain']);
       // fwrite(STDERR, print_r('Number of settings: '.count($settings)."\n",
       // TRUE));
       
       // All Settings For One Domain
-      $settings = $this->pdo->getAllDomain('TestDomain.1');
-      PHPUnit_Framework_Assert::assertEquals(3, count($settings));
+      $settings = $this->pdo->getAllDomain('ChildDomain');
+      PHPUnit_Framework_Assert::assertEquals($childCount, count($settings));
       PHPUnit_Framework_Assert::assertNotNull($settings[0]['domain']);
       
       // fwrite(STDERR, print_r('Domain for first setting:
@@ -118,13 +150,16 @@ class SettingsServicePDOTest extends PHPUnit_Framework_TestCase
       
       // Domain List
       $domains = $this->pdo->getDomains();
-      PHPUnit_Framework_Assert::assertGreaterThan(6, count($domains));
+      PHPUnit_Framework_Assert::assertGreaterThan(2, count($domains));
       PHPUnit_Framework_Assert::assertNotNull($domains[0]);
-      
-      // Delete Test
-      $this->pdo->delete('TestDomain', 'TestSettingKey');
-      $ret = $this->pdo->get('TestDomain', 'TestSettingKey');
-      PHPUnit_Framework_Assert::assertNull($ret);
+
+      // Delete all settings for specified domain
+      $this->pdo->deleteAllDomain('ChildDomain');
+      $settings = $this->pdo->getAllDomain('ChildDomain');
+      PHPUnit_Framework_Assert::assertEquals(0, count($settings));
+      $this->pdo->deleteAllDomain('ParentDomain');
+      $settings = $this->pdo->getAllDomain('ParentDomain');
+      PHPUnit_Framework_Assert::assertEquals(0, count($settings));
    }
 }
 
