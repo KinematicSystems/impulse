@@ -5,10 +5,6 @@
 ## Objective
 Attempting to take a product that was developed using Java for the server and Adobe Flex for the client and migrate it to PHP and AngularJS.  
 
-There is nothing useful here at this point but the server code demonstrating the use of:
-- [Slim Framework 2.4.2](http://www.slimframework.com) for implementing REST web services and authentication middleware
-- [NotORM](http://www.notorm.com/) for mapping arrays to database fields and getting rid of some repetitive PDO code 
-
 ## Setup
 *Requires PHP >= 5.5.0 and MySQL >= 5.5.2*
 
@@ -45,3 +41,17 @@ The web server deployment folder looks like this so far (webroot -> source folde
   - Workspace Collaboration Application 
 - /impulse/index.html -> /ui/index.html  
   - Landing Page 
+
+## 2014-10-29
+Added administrative application.  
+- Use [Bower](http://bower.io/) to retrieve dependencies.
+- Use [Grunt](http://bower.io/) to move the files into the dist folder.  
+  - `grunt copy`
+
+## Initial Release
+There is nothing useful here at this point but the server code demonstrating the use of:
+- [Slim Framework 2.4.2](http://www.slimframework.com) for implementing REST web services and authentication middleware
+- [NotORM](http://www.notorm.com/) for mapping arrays to database fields and getting rid of some repetitive PDO code 
+
+
+  
