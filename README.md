@@ -43,8 +43,16 @@ The web server deployment folder looks like this so far (webroot -> source folde
   - Landing Page 
 
 ## 2014-10-29
-Added administrative application.  
+Added administrative application.
+*For building [NodeJS](http://nodejs.org/) >- v0.10.29 is required*
 *From the ui/ folder:*
+- Initial NodeJS development tools
+  - 'npm install -g bower` installs bower globally
+  - 'npm install grunt --save-dev` installs into ui/node_modules
+  - 'npm install grunt-contrib-jshint --save-dev` installs into ui/node_modules
+  - 'npm install grunt-contrib-uglify --save-dev` installs into ui/node_modules
+  - 'npm install grunt-contrib-copy --save-dev` installs into ui/node_modules
+
 - Use [Bower](http://bower.io/) to retrieve dependencies.
   - `bower install`
 
