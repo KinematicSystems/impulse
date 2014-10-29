@@ -43,7 +43,9 @@
  */
 class AppUtils
 {
-
+   const USER_ERROR_CODE = 98;
+   const DB_ERROR_CODE = 99;
+    
    /**
     * Send an http response with content encoded as JSON
     *
@@ -67,6 +69,35 @@ class AppUtils
       }
    }
 
+
+   /**
+    * Send an http response with 500 status and an error message and error code
+    * formatted as JSON.
+    *
+    * @param int $code
+    *           Error code
+    * @param int $message
+    *           Error message
+    * @param int $status
+    *           HTTP status code (default 500)
+    */
+   public static function sendError($code, $message, $details, $status = 500)
+   {
+      $app = \Slim\Slim::getInstance();
+      $app->response()->header('Content-Type', 'application/json');
+      // echo '{"error":{"text":' . $message . '", "errorCode":'. $status .
+      // '}}';
+      $app->response()->status($status);
+      $msg = array(
+         "error" => true,
+         "code" => $code,
+         "message" => $message,
+         "details" => $details
+      );
+      
+      echo json_encode($msg, JSON_NUMERIC_CHECK);
+   }
+
    /**
     * Marshall a NotORM table/result to and array
     * Using this method because iterator_to_array will create
@@ -84,37 +115,10 @@ class AppUtils
       }
       return $ret;
    }
-
+   
    /**
-    * Send an http response with 500 status and an error message and error code
-    * formatted as JSON.
-    *
-    * @param int $code
-    *           Error code
-    * @param int $message
-    *           Error message
-    */
-   public static function sendError($code, $message)
-   {
-      $app = \Slim\Slim::getInstance();
-      $app->response()->header('Content-Type', 'application/json');
-      // echo '{"error":{"text":' . $message . '", "errorCode":'. $status .
-      // '}}';
-      $app->response()->status(500);
-      $msg = array(
-         "error" => true,
-         "code" => $code,
-         "message" => $message
-      );
-      
-      echo json_encode($msg, JSON_NUMERIC_CHECK);
-   }
-
-   /**
-    * Send an http response with 400 and send the error message
-    * back to the client.
-    * Not for production use.
-    *
+    * Log an error to the PHP error log with class/method/line
+    * 
     * @param Exception $exception           
     * @param string $method
     *           usually __METHOD__
@@ -125,8 +129,6 @@ class AppUtils
       error_log(
          'ERROR: ' . $method . ' line ' . $exception->getLine() . ": " .
              $exception->getMessage());
-      $app->response()->status(400);
-      echo '{"error":{"text":' . $exception->getMessage() . '}}';
    }
 
    /**
