@@ -71,6 +71,8 @@ class UserService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error getting all users", 
+            $e->getMessage());
       }
    }
 
@@ -89,6 +91,8 @@ class UserService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error getting user with ID $id", 
+            $e->getMessage());
       }
    }
 
@@ -113,6 +117,8 @@ class UserService
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error creating user with ID $id", 
+            $e->getMessage());
       }
    }
 
@@ -150,6 +156,8 @@ class UserService
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error updating user with ID $id", 
+            $e->getMessage());
       }
    }
 
@@ -169,6 +177,8 @@ class UserService
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error deleting user with ID $id", 
+            $e->getMessage());
       }
    }
    
@@ -190,6 +200,8 @@ class UserService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error getting all user properties", 
+            $e->getMessage());
       }
    }
 
@@ -208,6 +220,8 @@ class UserService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting properties for user with ID $id", $e->getMessage());
       }
    }
 
@@ -228,6 +242,9 @@ class UserService
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error assigning property $propId to user with ID $id", 
+            $e->getMessage());
       }
    }
 

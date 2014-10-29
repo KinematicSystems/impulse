@@ -41,9 +41,10 @@ abstract class EnrollmentStatus
    const Invited = 'I'; // User sent invite receipt not confirmed
    const Rejected = 'R'; // System rejected invite of user
    const Pending = 'P'; // Invite receipt confirmed
-   const Declined = 'D'; // Invitee declined invite
    const Accepted = 'A'; // Invitee accepted invite
+   const Declined = 'D'; // Invitee declined invite
    const Joined = 'J'; // Invitee is now a member of forum
+   const Suspended = 'S'; // Forum membership suspended
 }
 
 /**
@@ -62,9 +63,10 @@ class ForumServicePDO
       'I',
       'R',
       'P',
-      'D',
       'A',
-      'J'
+      'D',
+      'J',
+      'S'
    );
    private $db;
 
@@ -158,8 +160,8 @@ class ForumServicePDO
     *
     * @param string $id
     *           Forum ID
-    * @param $forumData
-    *           mixed Forum object
+    * @param $forumData mixed
+    *           Forum object
     * @throws Exception
     */
    public function updateForum($id, $forumData)
@@ -311,6 +313,34 @@ class ForumServicePDO
          }
          
          return $forums;
+      }
+      catch (PDOException $e)
+      {
+         throw $e;
+      }
+   }
+
+   /**
+    * Returns forum user enrollment info useful for administration
+    *
+    * @throws PDOException
+    * @return array Array of {forumId, userId, enrollmentStatus, forumName,
+    *         firstName, lastName, email, lastUpdated}
+    */
+   public function getAllForumEnrollment()
+   {
+      $sql = "SELECT fu.*, f.name as forumName, u.firstName, u.lastName, u.email
+      FROM forum_user fu, forum f, user_account u
+      WHERE fu.forumId = f.id
+      AND fu.userId = u.id
+      ORDER BY f.name, u.lastName";
+      
+      try
+      {
+         $db = getPDO();
+         $stmt = $db->query($sql);
+         $results = (array)$stmt->fetchAll(PDO::FETCH_ASSOC);
+         return $results;
       }
       catch (PDOException $e)
       {

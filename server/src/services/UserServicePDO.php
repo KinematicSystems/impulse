@@ -87,6 +87,7 @@ class UserServicePDO
          $user = $this->db->user_account()
             ->where("id=?", $id)
             ->fetch();
+
          if (!isset($user) || !$user)
             return null;
          else
@@ -132,11 +133,14 @@ class UserServicePDO
    {
       try
       {
-         $user = $this->db->user_account()->where("id", $id);
-         if ($user->fetch())
+         $user = $this->db->user_account()
+            ->where("id", $id)
+            ->fetch();
+          
+         if (isset($user) && $user)
          {
             // Check to see if the password has changed and rehash if necessary
-            if ($user['password'] != $userData['password'])
+            if (strcasecmp($user['password'],$userData['password']) != 0)
             {
                $userData['password'] = password_hash($userData['password'], 
                   PASSWORD_DEFAULT);

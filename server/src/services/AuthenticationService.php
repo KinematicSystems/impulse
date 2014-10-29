@@ -75,26 +75,40 @@ class AuthenticationService
          $login = (array) json_decode($body);
          $loginOK = false;
          
-         if (isset($login['userId']) && isset($login['password']))
+         //AppUtils::logDebug("attempting login ".$login['userId'].'/'.$login['password']);
+         if (!isset($login['userId']))
          {
-            $userService = new UserServicePDO();
-            if ($userService->validateUser($login['userId'], $login['password']))
-            {
-               AppUtils::setLoginValid($login['userId']);
-               $loginOK = true;
-            }
+             AppUtils::sendError(0, "Login Error", 
+               "User ID was not specified.", 401);
+            return;
          }
          
-         if (!$loginOK)
+         if (!isset($login['password']))
          {
-            $response->status(401);
+            AppUtils::sendError(0, "Login Error", 
+               "Password was not specified.", 401);
+            return;
+         }
+         
+         $userService = new UserServicePDO();
+         if ($userService->validateUser($login['userId'], $login['password']))
+         {
+            //AppUtils::logDebug($login['userId'].' Successfully logged in.');
+            AppUtils::setLoginValid($login['userId']);
+            AppUtils::sendResponse($login['userId']);
          }
          else
-            AppUtils::sendResponse($login['userId']);
+         {
+            //AppUtils::logDebug($login['userId'].' Failed login!');
+            AppUtils::sendError(0, "Login Error", 
+               "User ID/Password combination is invalid.", 401);
+         }
       }
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error Authenticating User", 
+            $e->getMessage());
       }
    }
 

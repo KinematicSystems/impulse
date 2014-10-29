@@ -95,7 +95,7 @@ class ForumUploadService
                break;
          } // End of switch.
          
-         AppUtils::sendError(500, $errorMsg);
+         AppUtils::sendError(500, "File Upload Error", $errorMsg);
       } // End of error IF.
       else
       {
@@ -120,6 +120,8 @@ class ForumUploadService
          catch (Exception $e)
          {
             AppUtils::logError($e, __METHOD__);
+            AppUtils::sendError($e->getCode(), 
+               "Error creating file node for $fileName", $e->getMessage());
          }
       }
       

@@ -84,7 +84,7 @@ class SettingsServicePDO
       try
       {
          return AppUtils::dbToArray(
-            $this->db->system_setting()->where("domain=?", $domain));
+            $this->db->system_setting()->where("domain=?", $domain)->order("settingKey"));
       }
       catch (PDOException $e)
       {
@@ -198,6 +198,29 @@ class SettingsServicePDO
    }
 
    /**
+    * Delete a setting with specified domain name and setting key
+    *
+    * @param string $domain
+    *           Domain name
+    * @throws Exception
+    */
+   public function deleteAllDomain($domain)
+   {
+      try
+      {
+         $pdo = getPDO();
+         $sql = "DELETE FROM system_setting WHERE `domain` = :domainId";
+         $stmt = $pdo->prepare($sql);
+         $stmt->bindParam(':domainId', $domain, PDO::PARAM_STR);
+         $stmt->execute();
+      }
+      catch (Exception $e)
+      {
+         throw $e;
+      }
+   }
+    
+   /**
     * Returns all the domain names
     *
     * @return array array of domain names
@@ -206,9 +229,8 @@ class SettingsServicePDO
    {
       try
       {
-         // Get all users from system_setting table
          $domains = array();
-         foreach ($this->db->system_setting()->select("DISTINCT domain") as $domainRow)
+         foreach ($this->db->system_setting()->select("DISTINCT domain")->order("domain") as $domainRow)
          {
             $domains[] = $domainRow['domain']; // append
          }

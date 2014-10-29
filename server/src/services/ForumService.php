@@ -38,14 +38,15 @@ $app->post('/forums/admin', 'ForumService::createForum');
 $app->put('/forums/admin/:id', 'ForumService::updateForum');
 $app->delete('/forums/admin/:id', 'ForumService::deleteForum');
 
-$app->get('/forums/enrollment/:forumId/:userId', 'ForumService::getForumEnrollmentStatus');
+$app->get('/forums/enrollment/:forumId/:userId','ForumService::getForumEnrollmentStatus');
 $app->post('/forums/enrollment', 'ForumService::setForumEnrollmentStatus');
+$app->get('/forums/enrollment/all', 'ForumService::getAllForumEnrollment');
 $app->get('/forums/user/:userId', 'ForumService::getForumsForUser');
 
 // Decided not to allow a path of parent IDs because it precludes the use of
 // urls that have IDs in the middle like /forums/:forumId/log
-//$app->get('/forums/:parentIds+', 'ForumService::getFileNodes'); 
-$app->get('/forums/:parentId', 'ForumService::getFileNodes'); 
+// $app->get('/forums/:parentIds+', 'ForumService::getFileNodes');
+$app->get('/forums/:parentId', 'ForumService::getFileNodes');
 $app->post('/forums/folder', 'ForumService::createFileNode');
 $app->delete('/forums/folder/:id', 'ForumService::deleteFileNode');
 $app->delete('/forums/file/:id', 'ForumService::deleteFileNode');
@@ -84,6 +85,8 @@ class ForumService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error getting all forums", 
+            $e->getMessage());
       }
    }
 
@@ -103,6 +106,8 @@ class ForumService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting forum with ID: " . $id, $e->getMessage());
       }
    }
 
@@ -121,13 +126,14 @@ class ForumService
          $body = $request->getBody();
          $forumData = (array) json_decode($body);
          $pdo = new ForumServicePDO();
-         $forumId = $pdo->createForum($forumData['name'], 
-            $forumData['userId']);
+         $forumId = $pdo->createForum($forumData['name'], $forumData['userId']);
          AppUtils::sendResponse($forumId);
       }
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error creating forum", 
+            $e->getMessage());
       }
    }
 
@@ -155,16 +161,15 @@ class ForumService
          }
          else
          {
-            AppUtils::sendResponse(
-               array(
-                  "success" => false,
-                  "message" => "Forum with ID $id does not exist!"
-               ));
+            AppUtils::sendError(AppUtils::USER_ERROR_CODE, 
+               "Forum with ID $id does not exist!", "Database update failure");
          }
       }
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error updating forum with ID: " . $id, $e->getMessage());
       }
    }
 
@@ -184,6 +189,8 @@ class ForumService
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error deleting forum with ID: " . $id, $e->getMessage());
       }
    }
 
@@ -202,7 +209,8 @@ class ForumService
          $request = $app->request();
          $body = $request->getBody();
          $params = (array) json_decode($body);
-         
+         $userId = $params['userId'];
+         $forumId = $params['forumId'];
          $eStatus = $pdo->setForumEnrollmentStatus($params['forumId'], 
             $params['userId'], $params['enrollmentStatus']);
          AppUtils::sendResponse($eStatus);
@@ -210,6 +218,9 @@ class ForumService
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error setting enrollment status for user $userId in forum $forumId", 
+            $e->getMessage());
       }
    }
 
@@ -217,21 +228,46 @@ class ForumService
     *
     * @see ForumServicePDO::getForumEnrollmentStatus()
     */
-   public static function getForumEnrollmentStatus($forumId,$userId)
+   public static function getForumEnrollmentStatus($forumId, $userId)
    {
       try
       {
          $pdo = new ForumServicePDO();
-          
-         $eStatus = $pdo->getForumEnrollmentStatus($forumId,$userId);
+         
+         $eStatus = $pdo->getForumEnrollmentStatus($forumId, $userId);
          AppUtils::sendResponse($eStatus);
       }
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting enrollment status for user $userId in forum $forumId", 
+            $e->getMessage());
       }
    }
-    
+
+   /**
+    *
+    * @see ForumServicePDO::getAllForumEnrollment()
+    */
+   public static function getAllForumEnrollment()
+   {
+      try
+      {
+         $pdo = new ForumServicePDO();
+          
+         $result = $pdo->getAllForumEnrollment();
+         AppUtils::sendResponse($result);
+      }
+      catch (PDOException $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(),
+         "Error getting enrollment status for user $userId in forum $forumId",
+         $e->getMessage());
+      }
+      }
+       
    /**
     *
     * @see ForumServicePDO::getForumsForUser()
@@ -248,6 +284,8 @@ class ForumService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting forums for user $userId", $e->getMessage());
       }
    }
 
@@ -267,6 +305,8 @@ class ForumService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting log for forum $forumId", $e->getMessage());
       }
    }
 
@@ -277,7 +317,7 @@ class ForumService
    public static function createForumLogEntry()
    {
       $app = \Slim\Slim::getInstance();
-   
+      
       try
       {
          // get and decode JSON request body
@@ -285,12 +325,14 @@ class ForumService
          $body = $request->getBody();
          $forumLog = json_decode($body);
          $pdo = new ForumServicePDO();
-         $forumLogId = $pdo->createForumLogEntry((array)$forumLog);
+         $forumLogId = $pdo->createForumLogEntry((array) $forumLog);
          AppUtils::sendResponse($forumLogId);
       }
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error creating forum log entry", 
+            $e->getMessage());
       }
    }
 
@@ -310,9 +352,11 @@ class ForumService
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error purging log for forum $forumId", $e->getMessage());
       }
    }
-    
+
    /**
     *
     * @see ForumServicePDO::getFileNodes()
@@ -329,6 +373,8 @@ class ForumService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error retrieving file nodes for $parentId", $e->getMessage());
       }
    }
 
@@ -353,6 +399,8 @@ class ForumService
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error creating file node", 
+            $e->getMessage());
       }
    }
 
@@ -373,6 +421,8 @@ class ForumService
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error deleting file node with ID $id", $e->getMessage());
       }
    }
 }

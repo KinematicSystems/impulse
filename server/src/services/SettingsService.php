@@ -39,6 +39,7 @@ $app->get('/settings/:domain', 'SettingsService::getAllDomain');
 $app->get('/settings/:domain/:settingKey', 'SettingsService::get');
 $app->put('/settings/:domain/:settingKey', 'SettingsService::update');
 $app->delete('/settings/:domain/:settingKey', 'SettingsService::delete');
+$app->delete('/settings/:domain', 'SettingsService::deleteAllDomain');
 
 /**
  * SettingsService
@@ -68,6 +69,8 @@ class SettingsService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error getting all settings", 
+            $e->getMessage());
       }
    }
 
@@ -87,6 +90,8 @@ class SettingsService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting settings for domain $domain", $e->getMessage());
       }
    }
 
@@ -105,6 +110,9 @@ class SettingsService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting setting for domain $domain/$settingKey", 
+            $e->getMessage());
       }
    }
 
@@ -129,6 +137,8 @@ class SettingsService
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error creating setting $setting", 
+            $e->getMessage());
       }
    }
 
@@ -156,16 +166,15 @@ class SettingsService
          }
          else
          {
-            AppUtils::sendResponse(
-               array(
-                  "success" => false,
-                  "message" => "Setting $domain / $settingKey does not exist!"
-               ));
+            AppUtils::sendError(AppUtils::USER_ERROR_CODE, 
+               "Setting $domain / $settingKey does not exist!", $e->getMessage());
          }
       }
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error updating setting $domain/$settingKey", $e->getMessage());
       }
    }
 
@@ -185,6 +194,29 @@ class SettingsService
       catch (Exception $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error deleting setting $domain/$settingKey", $e->getMessage());
+      }
+   }
+
+   /**
+    *
+    * @see SettingsServicePDO::deleteAllDomain()
+    */
+   public static function deleteAllDomain($domain)
+   {
+      $app = \Slim\Slim::getInstance();
+      try
+      {
+         $pdo = new SettingsServicePDO();
+         $pdo->deleteAllDomain($domain);
+         $app->response()->status(204); // NO DOCUMENT STATUS CODE FOR SUCCESS
+      }
+      catch (Exception $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error deleting all settings for domain $domain", $e->getMessage());
       }
    }
 
@@ -204,6 +236,8 @@ class SettingsService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error getting all setting domains", 
+            $e->getMessage());
       }
    }
 }
