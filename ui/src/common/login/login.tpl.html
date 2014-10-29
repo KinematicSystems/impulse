@@ -1,0 +1,56 @@
+<style type="text/css">
+.login-panel {
+	width: 300px;
+	margin: 0 auto;
+	margin-top: 100px;
+}
+
+.login-form input.ng-invalid.ng-dirty {
+	border: 1px solid #FA787E;
+}
+
+.login-form input.ng-valid.ng-dirty {
+	border: 1px solid #78FA89;
+}
+
+.login-form input.ng-valid.ng-dirty {
+	border: 1px solid #78FA89;
+}
+
+.error>small, .error small.error {
+	display: block;
+	padding: 0.375em 0.25em;
+	margin-top: 0;
+	margin-bottom: 1em;
+	font-size: 0.75em;
+	font-weight: bold;
+	color: #C60F13;
+}
+</style>
+
+<div class="panel panel-default login-panel" ng-controller="LoginController">
+   <div class="panel-body" role="form">
+      <div class="error" ng-show="loginError != undefined">
+         <small class="error">{{loginError}}</small>
+      </div>
+      <form name="userForm" role="form" class="login-form" novalidate>
+         <div class="form-group">
+            <label>ID</label>
+            <input name="id" ng-model="userId" ng-minlength="5" required type="text" class="form-control"
+               placeholder="ID (user id)" />
+            <div class="error" ng-show="userForm.id.$dirty && userForm.id.$invalid">
+               <small class="error" ng-show="userForm.id.$error.required"> ID is required.</small>
+               <small class="error" ng-show="userForm.id.$error.minlength"> ID must be at least 5 characters.</small>
+            </div>
+         </div>
+         <div class="form-group">
+            <label>Password</label>
+            <input ng-model="password" type="password" class="form-control" />
+         </div>
+      </form>
+      <div style="text-align: right">
+         <button class="btn btn-success" ng-click="userLogin()">Login</button>
+         <!-- <button class="btn btn-primary" ng-click="cancelLogin()">Cancel</button> -->
+      </div>
+   </div>
+</div>
