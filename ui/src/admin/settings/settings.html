@@ -1,0 +1,43 @@
+
+<div>
+   <alert ng-repeat="xalert in alerts" type="xalert.type" close="closeAlert($index)">{{xalert.msg}}</alert>
+</div>
+
+<table ng-table="tableParams" class="table table-bordered table-condensed table-striped table-hover ng-table-responsive">
+   <tbody ng-repeat="group in $groups">
+      <!-- Initially close all groups -->
+      <tr ng-init="group.$hideRows = true" class="ng-table-group">
+         <td colspan="{{$columns.length}}">
+            <a href="" ng-click="group.$hideRows = !group.$hideRows"> <span class="glyphicon"
+                  ng-class="{ 'glyphicon-chevron-right': group.$hideRows, 'glyphicon-chevron-down': !group.$hideRows }"></span>
+               <strong>{{ group.value }}</strong>
+            </a>
+         </td>
+      </tr>
+      <tr ng-hide="group.$hideRows" ng-repeat="setting in group.data">
+         <td data-title="'Setting'">{{setting.settingKey}}</td>
+         <td data-title="'Value'">
+            <a ng-if="!setting.underEdit" href="" ng-click="editSetting(setting, $event)">{{setting.value}}</a>
+            <form ng-if="setting.underEdit" name="settingForm" class="validated-form">
+              <div class="form-group"> 
+               <input required ng-minlength="1" name="settingVal" placeholder="Enter a {{setting.type}} value"
+                  class="form-control i-forminline" style="width: 77%;" type="{{setting.type}}" ng-model="setting.value" />
+               <button ng-if="setting.underEdit" style="width: 10%;" class="btn btn-success btn-xs form-control i-forminline" ng-disabled="settingForm.settingVal.$invalid" ng-click="saveSetting(setting, $event)">Save</button>
+               <button ng-if="setting.underEdit" style="width: 10%;" class="btn btn-warning btn-xs form-control i-forminline" ng-click="cancelEditSetting(setting, $event)">Cancel</button>
+               </div>
+               <div class="error" ng-show="settingForm.settingVal.$dirty && settingForm.settingVal.$invalid">
+                  <small ng-show="settingForm.settingVal.$error.required">Value is required.</small>
+                  <small ng-show="settingForm.settingVal.$error.minlength">Value must be at least 1 character.</small>
+                  <small ng-show="settingForm.settingVal.$error.number">Value must be numeric.</small>
+                  <small ng-show="settingForm.settingVal.$error.email">Value is not a valid email address.</small>
+                  <small ng-show="settingForm.settingVal.$error.url">Value is not a valid URL.</small>
+               </div>
+            </form>
+         </td>
+         <td data-title="'Type'">{{setting.type}}</td>
+<!--     <td data-title="'Actions'">
+            <a ng-if="!setting.underEdit" href="" class="btn btn-primary btn-xs" ng-click="editSetting(setting, $event)">Edit</a>
+         </td> -->
+         </tr>
+   </tbody>
+</table>

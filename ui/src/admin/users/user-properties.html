@@ -1,0 +1,47 @@
+<style type="text/css">
+.propDesc {
+   font-size: .8em;
+   font-style: italic;
+   padding-left: 26px;
+}
+
+.propCheckbox {
+   width: 25%;
+   display: inline-block;
+}
+
+#noHoverTable tbody tr:hover td {
+  background-color: transparent;
+}
+
+</style>
+
+<table id="noHoverTable" ng-table="tableParams" 
+	class="table table-bordered table-condensed ng-table-responsive">
+	<tbody ng-repeat="group in $groups">
+      <!-- Initially close all groups -->
+      <tr ng-init="group.$hideRows = true" class="ng-table-group">
+			<td colspan="{{$columns.length}}"><a href=""
+				ng-click="group.$hideRows = !group.$hideRows"> <span
+					class="glyphicon"
+					ng-class="{ 'glyphicon-chevron-right': group.$hideRows, 'glyphicon-chevron-down': !group.$hideRows }"></span>
+					<strong>{{ group.value }}</strong>
+			</a></td>
+		</tr>
+		<tr ng-hide="group.$hideRows" ng-repeat="property in group.data">
+			<td data-title="tableTitle">
+              <span class="propCheckbox">
+			    <!-- ng-true-value only works with strings so using ng-checked instead -->
+             <!-- putting checkbox inside label allows label to be clicked without 'for' attribute -->
+			      <label><input type="checkbox" ng-model="property.checked" ng-click="updateProperty(property)" >
+			      {{property.id}}</label>
+               </span>
+             <span class="propDesc">{{property.description}}</span>
+ 			</td>
+		</tr>
+	</tbody>
+</table>
+
+<div style="text-align: right">
+     <button class="btn btn-success" ng-click="close()">Close</button>
+</div>

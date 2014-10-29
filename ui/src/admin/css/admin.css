@@ -1,0 +1,51 @@
+body {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.navbar {
+  margin-bottom: 20px;
+}
+
+/* brighter row higlight for tables */
+.table tbody tr:hover td {
+  background-color: #F8F8FF;
+}
+
+/* Inline form items */
+.i-forminline {
+   display: inline;
+   width: auto;
+}
+
+
+/* For error display under edit fields */
+.validated-form input.ng-invalid.ng-dirty {
+   border: 1px solid #FA787E;
+}
+
+.validated-form input.ng-valid.ng-dirty {
+   border: 1px solid #78FA89;
+}
+
+.validated-form input.ng-valid.ng-dirty {
+   border: 1px solid #78FA89;
+}
+
+.validated-form label {
+   font-weight: normal;
+}
+
+.validated-form label.required {
+   font-weight: bold;
+}
+
+.error>small, .error small.error {
+   display: block;
+   padding: 0.2em 0.2em;
+   margin-top: 0;
+   margin-bottom: 0;
+   font-size: 0.9em;
+   font-weight: bold;
+   color: #C60F13;
+}

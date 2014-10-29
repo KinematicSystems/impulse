@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" ng-app="adminApp">
+<head>
+   <title>imPulse Admin</title>
+    <link rel="shortcut icon" href="../common/images/impulse-icon-20x20.png">
+<script src="../vendor/angular/angular.min.js"></script>
+<script src="../vendor/angular-route/angular-route.min.js"></script>
+<script src="../vendor/angular-messages/angular-messages.min.js"></script>
+<script src="../vendor/angular-sanitize/angular-sanitize.min.js"></script>
+
+<script src="../vendor/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+<link href="../vendor/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="../vendor/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
+
+<link rel="stylesheet" href="css/admin.css">
+
+<link href="../vendor/angular-dialog-service/dist/dialogs.min.css" rel="stylesheet">
+<script src="../vendor/angular-dialog-service/dist/dialogs.min.js"></script>
+
+<script src="../common/impulse/impulse-service.js"></script>
+<script src="../common/login/login-service.js"></script>
+<script src="../common/login/login-module.js"></script>
+<script src="admin-app.js"></script>
+<script src="users/user-service.js"></script>
+<script src="users/user-module.js"></script>
+<script src="settings/settings-service.js"></script>
+<script src="settings/settings-module.js"></script>
+<script src="forumadmin/forumadmin-service.js"></script>
+<script src="forumadmin/forumadmin-module.js"></script>
+
+<script src="../vendor/ng-table/ng-table.min.js"></script>
+<link rel="stylesheet" href="../vendor/ng-table/ng-table.min.css">
+</head>
+
+
+
+<body>
+   <div class="container-fluid">
+      <div ng-include="'navbar-header.html'"></div>
+      <div ng-view></div>
+    </div>
+</body>
+</html>

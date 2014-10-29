@@ -1,0 +1,53 @@
+
+<div class="well" style="height: 50px; padding: 7px;">
+    <!-- Use ng-show not ng-if because table filter and sort wont work if elements don't exist -->
+   <div class="col-sm-3" ng-show="userList.length > 0">
+      <span>
+         <label class="">Filter</label>
+         <input class="form-control i-forminline" style="width: 120px;" ng-model="userFilter">
+      </span>
+   </div>
+   <div class="col-sm-7" ng-show="userList.length > 0">
+      <label class="">Sort by</label>
+      <select class="form-control i-forminline" style="" ng-model="userOrder">
+         <option value="lastName">Last Name</option>
+         <option value="organization">Organization</option>
+      </select>
+   </div>
+  <div class="col-sm-2" ng-show="userList.length > 0">
+      <button class="btn btn-primary" ng-click="newUser()">New User</button>
+   </div>
+</div>
+<!-- Only show the table if there are users in the list -->
+<table id="userTable" ng-if="userList.length > 0" class="table table-bordered table-condensed table-striped table-hover">
+   <thead>
+      <tr>
+         <th>User ID</th>
+         <th>Last Name</th>
+         <th>First Name</th>
+         <th>Organization</th>
+         <th>EMail</th>
+         <th>Login Enabled</th>
+         <th></th>
+      </tr>
+   </thead>
+   <tbody>
+      <tr ng-init="activeRow = false" ng-mouseover="activeRow = true" ng-mouseleave="activeRow = false"
+            ng-repeat="user in userList | filter:userFilter | orderBy:userOrder" 
+            ng-click="editUser(user.id)">
+         <td>{{user.id}}</td>
+         <td>{{user.lastName}}</td>
+         <td>{{user.firstName}}</td>
+         <td>{{user.organization}}</td>
+         <td>{{user.email}}</td>
+         <td>{{user.enabled == 1?"Yes":"No"}}</td>
+         <td ng-if="activeRow" style="width: 130px; text-align: center">
+            <button class="btn btn-primary btn-xs remove" ng-click="editProperties(user, $index, $event)">Properties</button>
+            <button class="btn btn-danger btn-xs remove" ng-click="deleteUser(user, $index, $event)">Delete</button>
+         </td>
+         <td ng-if="!activeRow" style="width: 130px; text-align: center">
+           &nbsp;
+          </td>
+      </tr>
+   </tbody>
+</table>

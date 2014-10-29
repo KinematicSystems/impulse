@@ -1,0 +1,24 @@
+
+<div class="navbar navbar-inverse" role="navigation" ng-controller="HeaderController">
+   <div class="container-fluid">
+      <div class="navbar-header">
+         <img src="images/impulse-admin-logo.png" class="navbar-brand" style="padding: 3px 12px 5px 12px;"/>
+      </div>
+      <div class="navbar-collapse collapse">
+         <ul class="nav navbar-nav">
+            <li ng-class="{active:isNavbarActive('users')}"><a href="#/users">Users</a></li>
+            <li ng-class="{active:isNavbarActive('settings')}"><a href="#/settings">Settings</a></li>
+            <li ng-class="{active:isNavbarActive('forum')}"><a href="#/forum">Forum</a></li>
+         </ul>
+         <div class="navbar-right">
+            <p class="navbar-text">Version 2.0</p>
+            <button id="logoutButton" ng-if="loggedIn" ng-click="logout()" type="button"
+               class="btn btn-default navbar-btn btn-sm">
+               <span class="glyphicon glyphicon-log-out"></span> Logout
+            </button>
+         </div>
+      </div>
+      <!--/.nav-collapse -->
+   </div>
+   <!--/.container-fluid -->
+</div>

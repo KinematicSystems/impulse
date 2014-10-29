@@ -1,0 +1,36 @@
+
+<div class="well" style="height: 50px; padding: 7px;">
+    <!-- Use ng-show not ng-if because table filter and sort wont work if elements don't exist -->
+   <div class="col-sm-3" ng-show="enrollmentList.length > 0">
+      <span>
+         <label class="">Group By</label>
+          <select class="form-control i-forminline" ng-model="groupBy">
+              <option value="forumName">Forum Name</option>
+              <option value="lastName">Last Name</option>
+               <option value="enrollmentStatus">Status</option>
+          </select>
+      </span>
+   </div>
+ </div>
+    
+<table ng-table="tableParams" class="table table-bordered table-condensed table-striped ng-table-responsive">
+   <tbody ng-repeat="group in $groups">
+      <!-- Initially close all groups -->
+      <tr ng-init="group.$hideRows = true" class="ng-table-group">
+         <td colspan="{{$columns.length}}">
+            <a href="" ng-click="group.$hideRows = !group.$hideRows"> <span class="glyphicon"
+                  ng-class="{ 'glyphicon-chevron-right': group.$hideRows, 'glyphicon-chevron-down': !group.$hideRows }"></span>
+               <strong>{{ group.value }}</strong>
+            </a>
+         </td>
+      </tr>
+      <tr ng-hide="group.$hideRows" ng-repeat="item in group.data">
+         <td ng-show="groupBy !== 'lastName'" data-title="'User ID'">{{item.userId}}</td>
+         <td ng-show="groupBy !== 'lastName'" data-title="'User Name'">{{item.firstName}} {{item.lastName}}</td>
+         <td data-title="'eMail'">{{item.email}}</td>
+         <td ng-show="groupBy !== 'forumName'" data-title="'Forum Name'">{{item.forumName}}</td>
+         <td data-title="'Status'">{{enrollmentString(item.enrollmentStatus)}}</td>
+         <td data-title="'Last Updated'">{{item.lastUpdated}}</td>
+      </tr>
+   </tbody>
+</table>
