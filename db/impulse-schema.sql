@@ -38,9 +38,7 @@ DROP TABLE IF EXISTS `forum_file_metadata`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `forum_file_metadata` (
-  `id` char(36) NOT NULL,
-  `forumId` char(36) NOT NULL,
-  `sourceId` char(36) NOT NULL,
+  `nodeId` char(36) NOT NULL,
   `contentType` varchar(255) NOT NULL,
   `label` varchar(255) DEFAULT NULL,
   `description` text,
@@ -49,9 +47,9 @@ CREATE TABLE `forum_file_metadata` (
   `creationDate` datetime NOT NULL,
   `editorName` varchar(255) DEFAULT NULL,
   `editedDate` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `sourceId` (`sourceId`),
-  CONSTRAINT `forum_file_metadata_ibfk_1` FOREIGN KEY (`sourceId`) REFERENCES `forum_file_node` (`id`) ON DELETE CASCADE
+  PRIMARY KEY (`nodeId`),
+  KEY `sourceId` (`nodeId`),
+  CONSTRAINT `forum_file_metadata_ibfk_1` FOREIGN KEY (`nodeId`) REFERENCES `forum_file_node` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -89,7 +87,7 @@ CREATE TABLE `forum_log` (
   `entryDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `content` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=95 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -103,6 +101,7 @@ CREATE TABLE `forum_user` (
   `forumId` char(36) NOT NULL,
   `userId` varchar(32) NOT NULL,
   `enrollmentStatus` char(1) NOT NULL,
+  `lastUpdated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`forumId`,`userId`),
   KEY `user_account_id_idx` (`userId`),
   CONSTRAINT `forum_id` FOREIGN KEY (`forumId`) REFERENCES `forum` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
@@ -195,4 +194,4 @@ CREATE TABLE `user_properties` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-10-16 12:58:58
+-- Dump completed on 2014-10-27 14:06:19
