@@ -44,7 +44,7 @@ The web server deployment folder looks like this so far (webroot -> source folde
 
 ## 2014-10-29
 Added administrative application.
-*For building [NodeJS](http://nodejs.org/) >- v0.10.29 is required*
+*For building [NodeJS](http://nodejs.org/) >= v0.10.29 is required*
 
 *From the ui/ folder:*
 - Initial NodeJS development tools
