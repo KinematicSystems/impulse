@@ -1,5 +1,5 @@
 -- Initial admin password is 'change.me'
-INSERT INTO `impulse`.`user_account`
+INSERT INTO `user_account`
 (`id`,
 `firstName`,
 `lastName`,
