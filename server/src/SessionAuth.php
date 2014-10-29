@@ -60,7 +60,6 @@ class SessionAuth extends \Slim\Middleware
    public function call()
    {
       $reqURI = $this->app->request()->getResourceUri();
-      
       if (AppUtils::isLoggedIn())
       {
          $this->next->call();
