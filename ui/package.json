@@ -1,0 +1,35 @@
+{
+  "author": "Matt Grippaldi",
+  "name": "impulse",
+  "homepage": "https://kinematicsystems.com/impulse",
+  "version": "2.0.0-SNAPSHOT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KinematicSystems/impulse"
+  },
+  "bugs": {
+    "url": "https://github.com/KinematicSystems/impulse/issues"
+  },
+  "licenses": [
+    {
+      "type": "GNU",
+      "url": "ttps://kinematicsystems.com/impulse/common/license.html"
+    }
+  ],
+  "engines": {
+    "node": ">= 0.8.4"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-contrib-concat": "~0.1.3",
+    "grunt-contrib-copy": "^0.7.0",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-uglify": "^0.6.0",
+    "grunt-contrib-watch": "~0.3.1",
+    "grunt-html2js": "~0.1.0",
+    "grunt-recess": "~0.3",
+    "jshint": "^2.5.7"
+  }
+}
