@@ -44,7 +44,10 @@ The web server deployment folder looks like this so far (webroot -> source folde
 
 ## 2014-10-29
 Added administrative application.  
+*From the ui/ folder:*
 - Use [Bower](http://bower.io/) to retrieve dependencies.
+  - `bower install`
+
 - Use [Grunt](http://bower.io/) to move the files into the dist folder.  
   - `grunt copy`
 
