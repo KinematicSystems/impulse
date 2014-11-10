@@ -62,6 +62,7 @@ class ForumServicePDOTest extends PHPUnit_Framework_TestCase
    	   'organization' => 'testOrganization',
    	   'email' => 'forumUser@email.com',
    	   'password' => 'forumUser1234',
+         'sysuser' => 1,
    	   'enabled' => 1);
    	
    	// Create User for forum test
@@ -133,12 +134,34 @@ class ForumServicePDOTest extends PHPUnit_Framework_TestCase
       $enrollmentStatus = $this->pdo->getForumEnrollmentStatus($forumId,SELF::USER_ID);
       PHPUnit_Framework_Assert::assertNotNull($enrollmentStatus);
       PHPUnit_Framework_Assert::assertEquals(EnrollmentStatus::Invited, $enrollmentStatus);
+
+      // Enroll User in Forum
+      $this->pdo->setForumEnrollmentStatus($forumId,SELF::USER_ID,EnrollmentStatus::Joined);
+      $enrollmentStatus = $this->pdo->getForumEnrollmentStatus($forumId,SELF::USER_ID);
+      PHPUnit_Framework_Assert::assertNotNull($enrollmentStatus);
+      PHPUnit_Framework_Assert::assertEquals(EnrollmentStatus::Joined, $enrollmentStatus);
       
       // All Forums for User
       $forums = $this->pdo->getForumsForUser(SELF::USER_ID);
       PHPUnit_Framework_Assert::assertEquals(1, count($forums));
       PHPUnit_Framework_Assert::assertNotNull($forums[0]['name']);
 
+      // All Enrolled Users for a Forum 
+      $enrollment = $this->pdo->getForumEnrollment($forumId,true);
+      PHPUnit_Framework_Assert::assertGreaterThan(0, count($enrollment));
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['forumId']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['userId']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['enrollmentStatus']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['forumName']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['firstName']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['lastName']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['email']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['lastUpdated']);
+
+      // All Users NOT Enrolled for a Forum
+      $enrollment = $this->pdo->getForumEnrollment($forumId,false);
+      PHPUnit_Framework_Assert::assertGreaterThan(0, count($enrollment));
+      
       // All Enrolled Users for All Forums (admin function)
       $enrollment = $this->pdo->getAllForumEnrollment();
       PHPUnit_Framework_Assert::assertGreaterThan(0, count($enrollment));
@@ -167,14 +190,23 @@ class ForumServicePDOTest extends PHPUnit_Framework_TestCase
       $newFolder = array('id' => '',
          'forumId' => $forumId,
          'parentId' => $forumId,
-         'name' => 'TestFolder.1',
+         'name' => 'TestFolder.X',
          'contentType' => ForumServicePDO::FOLDER_NODE
       );
       
       $rootNode = $this->pdo->createFileNode($newFolder);
       $nodes = $this->pdo->getFileNodes($forumId);
       PHPUnit_Framework_Assert::assertEquals(1, count($nodes));
-            
+      PHPUnit_Framework_Assert::assertEquals($nodes[0]['name'],'TestFolder.X');
+
+      // Rename node
+      $newName = $this->pdo->renameFileNode($rootNode['id'],'TestFolder.1');
+      $nodes = $this->pdo->getFileNodes($forumId);
+      PHPUnit_Framework_Assert::assertEquals(1, count($nodes));
+      PHPUnit_Framework_Assert::assertNotEquals($nodes[0]['name'],'TestFolder.X');
+      PHPUnit_Framework_Assert::assertEquals($nodes[0]['name'],'TestFolder.1');
+      PHPUnit_Framework_Assert::assertEquals($nodes[0]['id'],$rootNode['id']);
+      
       // Add a single child
       $childNode = array('id' => '',
       		'forumId' => $forumId,
