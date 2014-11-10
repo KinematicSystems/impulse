@@ -22,10 +22,14 @@ module.exports = function(grunt) {
       copy : {
          vendor : {
             files : [ 
+              { src : 'vendor/jquery/dist/jquery.min.js', dest : 'dist/'},
+              { src : 'vendor/jquery/dist/jquery.min.map', dest : 'dist/'},
               { src : 'vendor/angular/angular.min.js', dest : 'dist/'},
               { src : 'vendor/angular/angular.min.js.map', dest : 'dist/'},
               { src : 'vendor/angular-route/angular-route.min.js', dest : 'dist/'},
               { src : 'vendor/angular-route/angular-route.min.js.map', dest : 'dist/'},
+              { src : 'vendor/angular-animate/angular-animate.min.js', dest : 'dist/'},
+              { src : 'vendor/angular-animate/angular-animate.min.js.map', dest : 'dist/'},
               { src : 'vendor/angular-messages/angular-messages.min.js', dest : 'dist/'},
               { src : 'vendor/angular-messages/angular-messages.min.js.map', dest : 'dist/'},
               { src : 'vendor/angular-sanitize/angular-sanitize.min.js', dest : 'dist/'},
@@ -42,6 +46,7 @@ module.exports = function(grunt) {
               { src : 'vendor/ng-file-upload/angular-file-upload-shim.min.js', dest : 'dist/'},
               { src : 'vendor/ng-file-upload/angular-file-upload.min.js', dest : 'dist/'},
               { src : 'vendor/components-font-awesome/css/font-awesome.min.css', dest : 'dist/'},
+              { src : 'vendor/components-font-awesome/fonts/*', dest : 'dist/'},
               { src : 'vendor/leaflet/dist/leaflet.css', dest : 'dist/'},
               { src : 'vendor/leaflet/dist/leaflet.js', dest : 'dist/'},
               { src : 'vendor/leaflet/dist/images/*', dest : 'dist/'},
