@@ -75,6 +75,7 @@ class UserServicePDOTest extends PHPUnit_Framework_TestCase
          'organization' => 'testOrganization',
          'email' => 'testguy@email.com',
          'password' => 'testguy1234!@#$',
+         'sysuser' => 1,
          'enabled' => 1
       );
       
