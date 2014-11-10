@@ -1,8 +1,8 @@
 angular.module('loginModule', [ 'services.LoginService', 'services.ImpulseService' ])
 
 
-.controller('LoginController', [ '$scope', 'loginService', 'LOGIN_EVENTS',
-	function($scope, loginService, LOGIN_EVENTS) {
+.controller('LoginController', [ '$scope', 'loginService', 'LOGIN_EVENTS','impulseService',
+	function($scope, loginService, LOGIN_EVENTS, impulseService) {
 		$scope.userId = "";
 		$scope.password = "";
 		$scope.loginError = undefined;
@@ -23,7 +23,7 @@ angular.module('loginModule', [ 'services.LoginService', 'services.ImpulseServic
 		    else 
 		    {
 		    	// Form was not valid 
-		       confirm("Please correct errors.");   
-			}
+		       impulseService.showError("Error", "Please correct errors.");   
+		    }
 		};
 	} ]);
