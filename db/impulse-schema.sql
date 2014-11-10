@@ -87,7 +87,7 @@ CREATE TABLE `forum_log` (
   `entryDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `content` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=95 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=215 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -157,6 +157,7 @@ CREATE TABLE `user_account` (
   `password` varchar(255) NOT NULL,
   `enabled` tinyint(1) NOT NULL,
   `sysadmin` tinyint(1) NOT NULL DEFAULT '0',
+  `sysuser` tinyint(4) NOT NULL DEFAULT '0',
   `initials` varchar(255) DEFAULT NULL,
   `middleName` varchar(255) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
@@ -194,4 +195,4 @@ CREATE TABLE `user_properties` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-10-27 14:06:19
+-- Dump completed on 2014-11-06  9:08:15
