@@ -58,7 +58,7 @@ abstract class EnrollmentStatus
  */
 class ForumServicePDO
 {
-   const FOLDER_NODE = 'folder';
+   const FOLDER_NODE = '#folder';
    public static $ENROLLMENT_CODES = array(
       'I',
       'R',
@@ -129,7 +129,8 @@ class ForumServicePDO
    }
 
    /**
-    * Create a new forum
+    * Create a new forum and the calls setForumEnrollmentStatus to join the
+    * owner to the new forum
     *
     * @param string $forumName
     *           Forum Name
@@ -147,6 +148,8 @@ class ForumServicePDO
          $newForum['name'] = $forumName;
          $newForum['owner'] = $forumOwner;
          $this->db->forum()->insert($newForum);
+         $this->setForumEnrollmentStatus($newForum['id'], $forumOwner, 
+            EnrollmentStatus::Joined);
          return $newForum['id'];
       }
       catch (Exception $e)
@@ -304,12 +307,18 @@ class ForumServicePDO
    {
       try
       {
-         // Get all users from system_setting table
          $forums = array();
          $forumUserTable = $this->db->forum_user();
          foreach ($forumUserTable->where("userId=?", $userId) as $forumUser)
          {
-            $forums[] = $forumUser->forum;
+             // error_log(print_r($forumUser, true));
+            
+            $forum = $forumUser->forum;
+            $forum['userId'] = $forumUser['userId'];
+            $forum['enrollmentStatus'] = $forumUser['enrollmentStatus'];
+            $forum['lastUpdated'] = $forumUser['lastUpdated'];
+            
+            $forums[] = $forum;
          }
          
          return $forums;
@@ -321,17 +330,69 @@ class ForumServicePDO
    }
 
    /**
+    * Returns forum user enrollment info for the specified forum
+    *
+    * @throws PDOException
+    * @return array Array of object contatining all fields from forum_user,
+    *         user_account, and forumName
+    */
+   public function getForumEnrollment($forumId, $enrolled)
+   {
+      $sql = "";
+      
+      if ($enrolled)
+      {
+         $sql = "SELECT f.name as forumName, fu.*, u.*
+                  FROM forum_user fu, forum f, user_account u
+                  WHERE fu.forumId = :forumId
+                  AND u.sysuser is true   
+                  AND fu.forumId = f.id
+                  AND fu.userId = u.id
+                  ORDER BY f.name, u.lastName";
+      }
+      else
+      {
+         $sql = "SELECT f.name as forumName, u.id as userId, u.*
+                  FROM forum f, user_account u
+                  WHERE f.id = :forumId
+                  AND u.sysuser is true   
+                  AND u.id NOT IN (
+                  		SELECT userId 
+                  		FROM forum_user 
+                  		WHERE forumId = :userForumId) 
+                  ORDER BY f.name, u.lastName";
+      }
+      
+      try
+      {
+         $db = getPDO();
+         $stmt = $db->prepare($sql);
+         $stmt->bindParam("forumId", $forumId);
+         if (!$enrolled)
+            $stmt->bindParam("userForumId", $forumId);
+         $stmt->execute();
+         $results = (array) $stmt->fetchAll(PDO::FETCH_ASSOC);
+         return $results;
+      }
+      catch (PDOException $e)
+      {
+         throw $e;
+      }
+   }
+
+   /**
     * Returns forum user enrollment info useful for administration
     *
     * @throws PDOException
-    * @return array Array of {forumId, userId, enrollmentStatus, forumName,
-    *         firstName, lastName, email, lastUpdated}
+    * @return array Array of object contatining all fields from forum_user,
+    *         user_account, and forumName
     */
    public function getAllForumEnrollment()
    {
-      $sql = "SELECT fu.*, f.name as forumName, u.firstName, u.lastName, u.email
+      $sql = "SELECT f.name as forumName, fu.*, u.*
       FROM forum_user fu, forum f, user_account u
       WHERE fu.forumId = f.id
+      AND u.sysuser is true   
       AND fu.userId = u.id
       ORDER BY f.name, u.lastName";
       
@@ -339,7 +400,7 @@ class ForumServicePDO
       {
          $db = getPDO();
          $stmt = $db->query($sql);
-         $results = (array)$stmt->fetchAll(PDO::FETCH_ASSOC);
+         $results = (array) $stmt->fetchAll(PDO::FETCH_ASSOC);
          return $results;
       }
       catch (PDOException $e)
@@ -438,7 +499,32 @@ class ForumServicePDO
       try
       {
          return AppUtils::dbToArray(
-            $this->db->forum_file_node()->where("parentId=?", $parentId));
+            $this->db->forum_file_node()
+               ->where("parentId=?", $parentId)
+               ->order('contentType, name'));
+      }
+      catch (PDOException $e)
+      {
+         throw $e;
+      }
+   }
+
+   /**
+    * Returns a single forum file node for the specified id
+    *
+    * @param string $nodeId
+    *           Forum File Node ID
+    * @throws PDOException
+    * @return mixed orum File Node object
+    */
+   public function getFileNode($nodeId)
+   {
+      try
+      {
+         $node = $this->db->forum_file_node()
+            ->where("id=?", $nodeId)
+            ->fetch();
+         return $node;
       }
       catch (PDOException $e)
       {
@@ -461,6 +547,41 @@ class ForumServicePDO
          $node['id'] = AppUtils::guid();
          $this->db->forum_file_node()->insert((array) $node);
          return $node;
+      }
+      catch (Exception $e)
+      {
+         throw $e;
+      }
+   }
+
+   /**
+    * Rename a forum file node
+    *
+    * @param string $nodeId
+    *           Forum File Node ID
+    * @param string $nodeName
+    *           New name
+    * @throws PDOException
+    * @return string the new name
+    */
+   public function renameFileNode($nodeId, $nodeName)
+   {
+      try
+      {
+         $oldNode = $this->db->forum_file_node()->where("id", $nodeId);
+         if ($oldNode->fetch())
+         {
+            // TODO: Not sure why I had to do this put this in array
+            // instead of just casting like I did in the user update function.
+            $updateData = array();
+            $updateData['name'] = $nodeName;
+            $result = $oldNode->update($updateData);
+            return $nodeName;
+         }
+         else
+         {
+            throw new Exception("Forum file node with ID $id does not exist!");
+         }
       }
       catch (Exception $e)
       {

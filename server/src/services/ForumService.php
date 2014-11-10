@@ -41,6 +41,8 @@ $app->delete('/forums/admin/:id', 'ForumService::deleteForum');
 $app->get('/forums/enrollment/:forumId/:userId','ForumService::getForumEnrollmentStatus');
 $app->post('/forums/enrollment', 'ForumService::setForumEnrollmentStatus');
 $app->get('/forums/enrollment/all', 'ForumService::getAllForumEnrollment');
+$app->get('/forums/enrolled/:forumId', 'ForumService::getEnrolledForumUsers');
+$app->get('/forums/not-enrolled/:forumId', 'ForumService::getNotEnrolledForumUsers');
 $app->get('/forums/user/:userId', 'ForumService::getForumsForUser');
 
 // Decided not to allow a path of parent IDs because it precludes the use of
@@ -49,7 +51,9 @@ $app->get('/forums/user/:userId', 'ForumService::getForumsForUser');
 $app->get('/forums/:parentId', 'ForumService::getFileNodes');
 $app->post('/forums/folder', 'ForumService::createFileNode');
 $app->delete('/forums/folder/:id', 'ForumService::deleteFileNode');
+$app->get('/forums/file/:id', 'ForumService::getFileContent');
 $app->delete('/forums/file/:id', 'ForumService::deleteFileNode');
+$app->put('/forums/file/:id', 'ForumService::renameFileNode');
 
 $app->get('/forums/:forumId/log', 'ForumService::getForumLog');
 $app->post('/forums/log', 'ForumService::createForumLogEntry');
@@ -198,7 +202,7 @@ class ForumService
     *
     * @see ForumServicePDO::setForumEnrollmentStatus()
     */
-   public static function setForumEnrollmentStatus($id)
+   public static function setForumEnrollmentStatus()
    {
       $app = \Slim\Slim::getInstance();
       
@@ -209,6 +213,7 @@ class ForumService
          $request = $app->request();
          $body = $request->getBody();
          $params = (array) json_decode($body);
+         //error_log(print_r($params, true));
          $userId = $params['userId'];
          $forumId = $params['forumId'];
          $eStatus = $pdo->setForumEnrollmentStatus($params['forumId'], 
@@ -246,6 +251,54 @@ class ForumService
       }
    }
 
+   // TODO: figure out how to pass a static parameter with Slim to avoid this 
+   // $app->get('/forums/enrolled/:forumId', 'ForumService::getEnrolledForumUsers');
+   // $app->get('/forums/not-enrolled/:forumId', 'ForumService::getNotEnrolledForumUsers');
+   //
+   /**
+    *
+    * @see ForumServicePDO::getForumEnrollment()
+    */
+   public static function getEnrolledForumUsers($forumId)
+   {
+      try
+      {
+         $pdo = new ForumServicePDO();
+          
+         $result = $pdo->getForumEnrollment($forumId, true);
+         AppUtils::sendResponse($result);
+      }
+      catch (PDOException $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(),
+         "Error getting enrollment for forum $forumId",
+         $e->getMessage());
+      }
+   }
+
+   /**
+    *
+    * @see ForumServicePDO::getForumEnrollment()
+    */
+   public static function getNotEnrolledForumUsers($forumId)
+   {
+      try
+      {
+         $pdo = new ForumServicePDO();
+   
+         $result = $pdo->getForumEnrollment($forumId, false);
+         AppUtils::sendResponse($result);
+      }
+      catch (PDOException $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(),
+         "Error getting enrollment for forum $forumId",
+         $e->getMessage());
+      }
+   }
+    
    /**
     *
     * @see ForumServicePDO::getAllForumEnrollment()
@@ -255,19 +308,19 @@ class ForumService
       try
       {
          $pdo = new ForumServicePDO();
-          
+         
          $result = $pdo->getAllForumEnrollment();
          AppUtils::sendResponse($result);
       }
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
-         AppUtils::sendError($e->getCode(),
-         "Error getting enrollment status for user $userId in forum $forumId",
-         $e->getMessage());
+         AppUtils::sendError($e->getCode(), 
+            "Error getting all forum enrollment", 
+            $e->getMessage());
       }
-      }
-       
+   }
+
    /**
     *
     * @see ForumServicePDO::getForumsForUser()
@@ -401,6 +454,77 @@ class ForumService
          AppUtils::logError($e, __METHOD__);
          AppUtils::sendError($e->getCode(), "Error creating file node", 
             $e->getMessage());
+      }
+   }
+
+   /**
+    *
+    * @see ForumServicePDO::renameFileNode()
+    */
+   public static function renameFileNode($id)
+   {
+      $app = \Slim\Slim::getInstance();
+      try
+      {
+         // get and decode JSON request body
+         $request = $app->request();
+         $body = $request->getBody();
+         $params = (array) json_decode($body);
+         // error_log(print_r($params, true));
+         $name = $params['nodeName'];
+         $pdo = new ForumServicePDO();
+         $newName = $pdo->renameFileNode($id, $name);
+         AppUtils::sendResponse($newName);
+      }
+      catch (Exception $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), "Error renaming file node", 
+            $e->getMessage());
+      }
+   }
+
+   /**
+    * Get content for a node and stream to browser
+    *
+    * @param string $id
+    *           Forum File Node ID
+    */
+   public static function getFileContent($id)
+   {
+      $app = \Slim\Slim::getInstance();
+      try
+      {
+         // Get the node info
+         $pdo = new ForumServicePDO();
+         $fileNode = $pdo->getFileNode($id);
+         if (isset($fileNode))
+         {
+            $srcFile = FORUM_UPLOAD_DIR . $id;
+            $res = $app->response();
+            $res['Content-Description'] = 'File Transfer';
+            $res['Content-Type'] = $fileNode['contentType']; //'application/octet-stream';
+            // Content-Disposition: inline or attachement to force download regardless of type
+            $res['Content-Disposition'] = 'inline; filename=' . $fileNode['name'];
+            $res['Content-Transfer-Encoding'] = 'binary';
+            $res['Expires'] = '0';
+            $res['Cache-Control'] = 'must-revalidate';
+            $res['Pragma'] = 'public';
+            $res['Content-Length'] = filesize($srcFile);
+            // echo "SOME DATA BYTES";
+            readfile($srcFile);
+         }
+         else
+         {
+            AppUtils::sendError(AppUtils::DB_ERROR_CODE, 
+               "Error getting content for file node with ID $id","Database Error");
+         }
+      }
+      catch (Exception $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting content for file node with ID $id", $e->getMessage());
       }
    }
 
