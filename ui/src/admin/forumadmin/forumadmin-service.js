@@ -14,7 +14,7 @@ angular.module('services.ForumAdminService',[]).factory('forumAdminService', ['$
 	// Return the service object functions
 	return {
 		getAllForumEnrollment: function(userId) {
-			// Array of {forumId, userId, enrollmentStatus, forumName,firstName, lastName, email}
+			// Array of object contatining all fields from forum_user, user_account, and forumName
 			return runGetRequest(apiSection + "/enrollment/all");
 		}
 	};
