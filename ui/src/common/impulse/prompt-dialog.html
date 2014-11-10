@@ -1,0 +1,26 @@
+
+<div class="modal-content">
+   <div class="modal-header dialog-header-wait">
+      <h4 class="modal-title">
+         <span class="glyphicon glyphicon-file"></span>
+         {{promptHeading}}
+      </h4>
+   </div>
+   <div class="modal-body">
+      <ng-form name="promptDialog" novalidate="" role="form" class="ng-pristine ng-invalid ng-invalid-required">
+      <div class="form-group input-group-lg"
+         ng-class="{true: 'has-error'}[promptDialog.promptValue.$dirty &amp;&amp; promptDialog.promptValue.$invalid]">
+         <label class="control-label" for="course">{{promptLabel}}</label>
+         <input type="text" class="form-control ng-pristine ng-invalid ng-invalid-required" name="promptValue"
+            id="promptValue" ng-model="promptValue" ng-keyup="hitEnter($event)" required="">
+         <span class="help-block">{{promptMessage}}</span>
+      </div>
+      </ng-form>
+   </div>
+   <div class="modal-footer">
+      <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button type="button" class="btn btn-primary" ng-click="save()"
+         ng-disabled="(promptDialog.$dirty &amp;&amp; promptDialog.$invalid) || promptDialog.$pristine"
+         disabled="disabled">OK</button>
+   </div>
+</div>
