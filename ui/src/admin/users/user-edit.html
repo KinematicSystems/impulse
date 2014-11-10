@@ -128,6 +128,14 @@
                      Administrator
                   </label>
                </div>
+               <div class="checkbox">
+                  <label>
+                     <!-- ng-true-value only works with strings so using ng-checked instead -->
+                     <input type="checkbox" ng-model="user.sysuser" ng-click="sysUser = !sysUser"
+                        ng-checked="user.sysuser == 1">
+                     Collaborator (Workspace User)
+                  </label>
+               </div>
             </div>
          </div>
       </form>

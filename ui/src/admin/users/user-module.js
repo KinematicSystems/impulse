@@ -1,7 +1,10 @@
-var userModule = angular.module('userModule', [ 'services.UserService', 'services.ImpulseService',
-      'ngTable' ]);
+var userModule = angular.module('userModule', [ 'services.UserService', 'services.ImpulseService', 'ngTable' ]);
 
-userModule.controller('UserController', [ '$scope', '$location', 'userService', 'impulseService',
+userModule.controller('UserController', [
+      '$scope',
+      '$location',
+      'userService',
+      'impulseService',
       function($scope, $location, userService, impulseService) {
          $scope.userOrder = 'lastName'; // Default sort order
 
@@ -28,29 +31,30 @@ userModule.controller('UserController', [ '$scope', '$location', 'userService', 
             // enclosing div, which will try to trigger
             // an edit of this item.
             $event.stopPropagation();
-            var ok = confirm("Are you sure you want to delete user '" + user.id + "'?");
-            if (!ok)
-            {
-               return;
-            }
-
-            userService.deleteUser(user.id).success(function(data, status) {
-               if (status === 204 || status === 200) // 204 = No content
-               // success
-               {
-                  // It is gone from the DB so we can remove it from the
-                  // local list too
-                  // because of sorting the user can't be removed by index
-                  for (var i = 0; i < $scope.userList.length; ++i)
+            var dlg = impulseService.showConfirm("Confirm Delete",
+                  "Are you sure you want to delete user '" + user.id + "'?");
+            dlg.result.then(function(btn) {
+               // Yes
+               userService.deleteUser(user.id).success(function(data, status) {
+                  if (status === 204 || status === 200) // 204 = No content
+                  // success
                   {
-                     if ($scope.userList[i].id === user.id)
+                     // It is gone from the DB so we can remove it from the
+                     // local list too
+                     // because of sorting the user can't be removed by index
+                     for (var i = 0; i < $scope.userList.length; ++i)
                      {
-                        $scope.userList.splice(i, 1);
-                        break;
+                        if ($scope.userList[i].id === user.id)
+                        {
+                           $scope.userList.splice(i, 1);
+                           break;
+                        }
                      }
-                  }
 
-               }
+                  }
+               });
+            }, function(btn) {
+               // No (Do Nothing)
             });
          };
 
@@ -65,8 +69,12 @@ userModule.controller('UserController', [ '$scope', '$location', 'userService', 
          $scope.orderProp = 'lastName';
       } ]);
 
-userModule.controller('UserEditController', [ '$scope', '$routeParams', '$location',
-      'impulseService', 'userService',
+userModule.controller('UserEditController', [
+      '$scope',
+      '$routeParams',
+      '$location',
+      'impulseService',
+      'userService',
       function($scope, $routeParams, $location, impulseService, userService) {
          $scope.editMode = false;
          $scope.user = {};
@@ -77,6 +85,7 @@ userModule.controller('UserEditController', [ '$scope', '$routeParams', '$locati
             $scope.user = {};
             $scope.userEnabled = true;
             $scope.sysAdmin = false;
+            $scope.sysUser = true;
 
          }
          else
@@ -85,6 +94,7 @@ userModule.controller('UserEditController', [ '$scope', '$routeParams', '$locati
                $scope.user = data;
                $scope.userEnabled = $scope.user.enabled;
                $scope.sysAdmin = $scope.user.sysadmin;
+               $scope.sysUser = $scope.user.sysuser;
                $scope.editMode = true;
             });
          }
@@ -99,6 +109,10 @@ userModule.controller('UserEditController', [ '$scope', '$routeParams', '$locati
             $scope.user.sysadmin = value;
          });
 
+         $scope.$watch('sysUser', function(value) {
+            $scope.user.sysuser = value;
+         });
+        
          $scope.saveUser = function() {
             if ($scope.userForm.$valid)
             {
@@ -106,16 +120,18 @@ userModule.controller('UserEditController', [ '$scope', '$routeParams', '$locati
                // Passed client side validations
                if ($scope.editMode)
                {
-                  userService.updateUser($scope.user).success(function(data, status) {
-                     if (status === 200)
-                     {
-                        $location.path('/users');
-                     }
-                     else
-                     {
-                        alert("Error saving user!");
-                     }
-                  }).error(function(data, status, headers, config) {
+                  userService.updateUser($scope.user).success(
+                        function(data, status) {
+                           if (status === 200)
+                           {
+                              $location.path('/users');
+                           }
+                           else
+                           {
+                              impulseService.showError("Error saving user",
+                                    "Update call was sucessful but returned an error!");
+                           }
+                        }).error(function(data, status, headers, config) {
                      impulseService.showError(data.message, data.details);
                      // alert("Code:"+ data.code + "
                      // message:"+data.message+"
@@ -125,16 +141,18 @@ userModule.controller('UserEditController', [ '$scope', '$routeParams', '$locati
                }
                else
                {
-                  userService.createUser($scope.user).success(function(data, status) {
-                     if (status === 200)
-                     {
-                        $location.path('/users');
-                     }
-                     else
-                     {
-                        alert("Error saving user!");
-                     }
-                  }).error(function(data, status) {
+                  userService.createUser($scope.user).success(
+                        function(data, status) {
+                           if (status === 200)
+                           {
+                              $location.path('/users');
+                           }
+                           else
+                           {
+                              impulseService.showError("Error saving user",
+                                    "Create call was sucessful but returned an error!");
+                           }
+                        }).error(function(data, status) {
                      impulseService.showError(data.message, data.details);
                      // alert("Code:"+ data.code + "
                      // message:"+data.message+"
@@ -145,16 +163,18 @@ userModule.controller('UserEditController', [ '$scope', '$routeParams', '$locati
             else
             {
                // Form was not valid
-               confirm("Please correct errors before saving!");
+               impulseService.showError("Data Entry Error", "Please correct errors before saving!");
             }
          };
 
          $scope.cancelEdit = function() {
-            var ok = confirm("Are you sure you want to cancel editing?");
-            if (ok)
-            {
-               $location.path('/users');
-            }
+            impulseService.showConfirm("Confirm Cancellation", "Are you sure you want to cancel editing?").result.then(
+                  function(btn) {
+                     // Yes
+                     $location.path('/users');
+                  }, function(btn) {
+                     // No (Do Nothing)
+                  });
          };
 
       } ]);
@@ -163,35 +183,27 @@ userModule.controller('UserEditController', [ '$scope', '$routeParams', '$locati
  * match directive Used to confirm password From
  * http://ngmodules.org/modules/angular-input-match
  */
-userModule
-      .directive(
-            'match',
-            function() {
+userModule.directive('match', function() {
 
-               return {
-                  require : 'ngModel',
-                  restrict : 'A',
-                  scope : {
-                     match : '='
-                  },
-                  link : function(scope, elem, attrs, ctrl) {
-                     scope.$watch(function() {
-                                    var modelValue = ctrl.$modelValue || ctrl.$$invalidModelValue;
-                                    return ((ctrl.$pristine && angular.isUndefined(modelValue)) || scope.match === modelValue);
-                                 }, function(currentValue) {
-                                    ctrl.$setValidity('match', currentValue);
-                                 });
-                  }
-               };
-            });
+   return {
+      require : 'ngModel',
+      restrict : 'A',
+      scope : {
+         match : '='
+      },
+      link : function(scope, elem, attrs, ctrl) {
+         scope.$watch(function() {
+            var modelValue = ctrl.$modelValue || ctrl.$$invalidModelValue;
+            return ((ctrl.$pristine && angular.isUndefined(modelValue)) || scope.match === modelValue);
+         }, function(currentValue) {
+            ctrl.$setValidity('match', currentValue);
+         });
+      }
+   };
+});
 
-userModule.controller('UserPropertiesController', [
-      '$scope',
-      '$routeParams',
-      '$location',
-      'userService',
-      'ngTableParams',
-      function($scope, $routeParams, $location, userService, ngTableParams, $sce) {
+userModule.controller('UserPropertiesController', [ '$scope', '$routeParams', '$location', 'userService',
+      'ngTableParams', function($scope, $routeParams, $location, userService, ngTableParams, $sce) {
          $scope.userId = $routeParams.id;
          $scope.properties = {};
          $scope.tableTitle = "Property assignments for user '" + $scope.userId + "'";
@@ -244,15 +256,13 @@ userModule.controller('UserPropertiesController', [
          $scope.updateProperty = function(property) {
             if (property.checked)
             {
-               userService.assignProperty($scope.userId, property.id).success(
-                     function(data, status) {
-                     });
+               userService.assignProperty($scope.userId, property.id).success(function(data, status) {
+               });
             }
             else
             {
-               userService.revokeProperty($scope.userId, property.id).success(
-                     function(data, status) {
-                     });
+               userService.revokeProperty($scope.userId, property.id).success(function(data, status) {
+               });
             }
          };
 
