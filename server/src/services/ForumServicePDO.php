@@ -40,11 +40,12 @@ abstract class EnrollmentStatus
 {
    const Invited = 'I'; // User sent invite receipt not confirmed
    const Rejected = 'R'; // System rejected invite of user
-   const Pending = 'P'; // Invite receipt confirmed
+   const Pending = 'P'; // Invite request pending
    const Accepted = 'A'; // Invitee accepted invite
    const Declined = 'D'; // Invitee declined invite
    const Joined = 'J'; // Invitee is now a member of forum
    const Suspended = 'S'; // Forum membership suspended
+   const Left = 'L'; // User Left Forum
 }
 
 /**
@@ -66,7 +67,8 @@ class ForumServicePDO
       'A',
       'D',
       'J',
-      'S'
+      'S',
+      'L'
    );
    private $db;
 
@@ -134,18 +136,21 @@ class ForumServicePDO
     *
     * @param string $forumName
     *           Forum Name
+    * @param string $forumDescription
+    *           Forum Description
     * @param string $forumOwner
     *           Forum owner User ID
     * @throws Exception
     * @return string new forum ID
     */
-   public function createForum($forumName, $forumOwner)
+   public function createForum($forumName, $forumDescription, $forumOwner)
    {
       try
       {
          $newForum = array();
          $newForum['id'] = AppUtils::guid();
          $newForum['name'] = $forumName;
+         $newForum['description'] = $forumDescription;
          $newForum['owner'] = $forumOwner;
          $this->db->forum()->insert($newForum);
          $this->setForumEnrollmentStatus($newForum['id'], $forumOwner, 
@@ -167,7 +172,7 @@ class ForumServicePDO
     *           Forum object
     * @throws Exception
     */
-   public function updateForum($id, $forumData)
+   public function updateForum($id, $forumData, $updaterId)
    {
       try
       {
@@ -179,7 +184,8 @@ class ForumServicePDO
             $updateData = array();
             $updateData['id'] = $forumData['id'];
             $updateData['name'] = $forumData['name'];
-            $updateData['owner'] = $forumData['owner'];
+            $updateData['description'] = $forumData['description'];
+            $updateData['owner'] = $updaterId;
             $result = $forum->update($updateData);
             return $forumData;
          }
@@ -225,6 +231,7 @@ class ForumServicePDO
     * Sets the forum enrollment status and will add the record to the
     * forum_user table if necessary.
     *
+    *
     * @param string $forumId
     *           Forum ID
     * @param string $userId
@@ -248,6 +255,7 @@ class ForumServicePDO
          $newForumUser['forumId'] = $forumId;
          $newForumUser['userId'] = $userId;
          $newForumUser['enrollmentStatus'] = $enrollmentStatus;
+         $newForumUser['updateUserId'] = AppUtils::getUserId();
          
          $forumUser = $this->db->forum_user()->where("forumId=? AND userId=?", 
             $forumId, $userId);
@@ -296,7 +304,31 @@ class ForumServicePDO
    }
 
    /**
-    * Returns all the forums for the specified user.
+    * Deletes the forum enrollment for the specified forum and user
+    *
+    * @param string $forumId
+    *           Forum ID
+    * @param string $userId
+    *           Forum Member User ID
+    * @throws PDOException
+    */
+   public function deleteForumEnrollment($forumId, $userId)
+   {
+      try
+      {
+         $forumUser = $this->db->forum_user()->where("forumId=? AND userId=?", 
+            $forumId, $userId);
+         if (isset($forumUser))
+            $forumUser->delete();
+      }
+      catch (PDOException $e)
+      {
+         throw $e;
+      }
+   }
+
+   /**
+    * Returns all the joined forums for the specified user.
     *
     * @param string $userId
     *           User ID
@@ -309,14 +341,15 @@ class ForumServicePDO
       {
          $forums = array();
          $forumUserTable = $this->db->forum_user();
-         foreach ($forumUserTable->where("userId=?", $userId) as $forumUser)
+         foreach ($forumUserTable->where("userId=? AND enrollmentStatus = 'J'", $userId) as $forumUser)
          {
-             // error_log(print_r($forumUser, true));
+            // error_log(print_r($forumUser, true));
             
             $forum = $forumUser->forum;
             $forum['userId'] = $forumUser['userId'];
             $forum['enrollmentStatus'] = $forumUser['enrollmentStatus'];
             $forum['lastUpdated'] = $forumUser['lastUpdated'];
+            $forum['updateUserId'] = $forumUser['updateUserId'];
             
             $forums[] = $forum;
          }
@@ -328,13 +361,46 @@ class ForumServicePDO
          throw $e;
       }
    }
-
    /**
-    * Returns forum user enrollment info for the specified forum
+    * Returns forum user enrollment info useful for administration
     *
     * @throws PDOException
     * @return array Array of object contatining all fields from forum_user,
     *         user_account, and forumName
+    */
+   public function getAllForumEnrollment()
+   {
+      $sql = "SELECT f.name as forumName, fu.*, u.*
+      FROM forum_user fu, forum f, user_account u
+      WHERE fu.forumId = f.id
+      AND u.sysuser is true
+      AND fu.userId = u.id
+      ORDER BY f.name, u.lastName";
+   
+      try
+      {
+         $db = getPDO();
+         $stmt = $db->query($sql);
+         $results = (array) $stmt->fetchAll(PDO::FETCH_ASSOC);
+         return $results;
+      }
+      catch (PDOException $e)
+      {
+         throw $e;
+      }
+   }
+   
+    
+   /**
+    * Returns forum user enrollment info for the specified forum
+    *
+    * @param string $forumId
+    *           Forum ID
+    * @param boolean $enrolled
+    *           specifies if list of users returned are enrolled or not
+    * @throws PDOException
+    * @return array Array of object contatining all fields from forum_user,
+    *         user_account, and forumName, updaterFirstName, updaterLastName
     */
    public function getForumEnrollment($forumId, $enrolled)
    {
@@ -381,25 +447,32 @@ class ForumServicePDO
    }
 
    /**
-    * Returns forum user enrollment info useful for administration
+    * Returns pending enrollment requests that the specified user is authorized
+    * to approve
+    * i.e.
+    * All the forums that the specified user is already joined that have pending
+    * status.
     *
     * @throws PDOException
     * @return array Array of object contatining all fields from forum_user,
-    *         user_account, and forumName
+    *         user_account, and forumName, updateFirstName, updateLastName
     */
-   public function getAllForumEnrollment()
+   public function getPendingJoinRequests($userId)
    {
-      $sql = "SELECT f.name as forumName, fu.*, u.*
-      FROM forum_user fu, forum f, user_account u
-      WHERE fu.forumId = f.id
-      AND u.sysuser is true   
-      AND fu.userId = u.id
-      ORDER BY f.name, u.lastName";
-      
+      $sql = "SELECT forum_user.*,forum.name AS forumName
+               FROM forum_user, forum
+               WHERE enrollmentStatus = 'P'
+               AND forum.id = forum_user.forumId
+               AND forumId IN (SELECT forumId FROM forum_user 
+               WHERE userId = :userId 
+               AND enrollmentStatus = 'J'
+              )";
       try
       {
          $db = getPDO();
-         $stmt = $db->query($sql);
+         $stmt = $db->prepare($sql);
+         $stmt->bindParam("userId", $userId);
+         $stmt->execute();
          $results = (array) $stmt->fetchAll(PDO::FETCH_ASSOC);
          return $results;
       }
@@ -410,82 +483,36 @@ class ForumServicePDO
    }
 
    /**
-    * Returns all log entries for the specified forum
-    *
-    * @param string $forumId
-    *           Forum ID
+    * Returns pending invitations for the specified user
+    * 
+    * @param string userId
+    *           User ID
     * @throws PDOException
-    * @return array Array of Forum Log objects
+    * @return array Array of object contatining all fields from forum_user,
+    *         user_account, and forumName, updateFirstName, updateLastName
     */
-   public function getForumLog($forumId)
+   public function getInvitations($userId)
    {
+      $sql = "SELECT forum_user.*,forum.name AS forumName
+               FROM forum_user, forum
+               WHERE enrollmentStatus = 'I'
+               AND forum_user.userId = :userId
+               AND forum_user.forumId = forum.id";
       try
       {
-         return AppUtils::dbToArray(
-            $this->db->forum_log()
-               ->where("forumId=?", $forumId)
-               ->order('entryDate desc'));
+         $db = getPDO();
+         $stmt = $db->prepare($sql);
+         $stmt->bindParam("userId", $userId);
+         $stmt->execute();
+         $results = (array) $stmt->fetchAll(PDO::FETCH_ASSOC);
+         return $results;
       }
       catch (PDOException $e)
       {
          throw $e;
       }
    }
-
-   /**
-    * Create a new forum log entry using the specified object values
-    *
-    * @param mixed $logItem
-    *           Forum log item object
-    * @throws Exception
-    * @return int ID of new log item assigned by server
-    */
-   public function createForumLogEntry($logItem)
-   {
-      try
-      {
-         /*
-          * $logItem['entryDate'] is set in table schema `entryDate` timestamp
-          * NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-          * Another option would be to use $logItem['entryDate'] = new
-          * NotORM_Literal("NOW()")
-          */
-         $this->db->forum_log()->insert((array) $logItem);
-         return $this->db->forum_log()->insert_id();
-      }
-      catch (Exception $e)
-      {
-         throw $e;
-      }
-   }
-
-   /**
-    * Purges the entire log for a forum
-    *
-    * @param string $forumId
-    *           Forum ID
-    * @throws Exception
-    */
-   public function purgeForumLog($forumId)
-   {
-      try
-      {
-         $forumLog = $this->db->forum_log()->where("forumId=?", $forumId);
-         
-         if (isset($forumLog))
-         {
-            $forumLog->delete();
-         }
-      }
-      catch (Exception $e)
-      {
-         throw $e;
-         error_log(
-            'ERROR: ' . __METHOD__ . ' line ' . $e->getLine() . ": " .
-                $e->getMessage());
-      }
-   }
-
+ 
    /**
     * Returns a single level of forum file nodes for the specified parent
     *
@@ -546,6 +573,9 @@ class ForumServicePDO
       {
          $node['id'] = AppUtils::guid();
          $this->db->forum_file_node()->insert((array) $node);
+         AppUtils::logDebug(
+            "Created file node with ID: {" . $node['id'] . "} and parentId {" .
+                $node['parentId'] . "}");
          return $node;
       }
       catch (Exception $e)
@@ -603,14 +633,14 @@ class ForumServicePDO
          // Get the IDs of all the children
          foreach ($this->db->forum_file_node()->where("parentId=?", $id) as $childNode)
          {
+            AppUtils::logDebug("Found children for parent {" . $id . "}");
             $this->deleteFileNode($childNode['id']);
          }
          
          $node = $this->db->forum_file_node()->where("id=?", $id);
-         
-         if (isset($node))
+         $fileNode = $node->fetch();
+         if (isset($fileNode) && isset($fileNode['id']))
          {
-            $fileNode = $node->fetch();
             $contentType = $fileNode['contentType'];
             // Remove the document from disk if not a folder
             if (isset($contentType) &&
@@ -619,6 +649,9 @@ class ForumServicePDO
                unlink(FORUM_UPLOAD_DIR . $fileNode['id']);
             }
             
+            AppUtils::logDebug(
+               "Deleting node with ID: {" . $fileNode['id'] . "} and parentId {" .
+                   $fileNode['parentId'] . "}");
             $node->delete();
          }
       }

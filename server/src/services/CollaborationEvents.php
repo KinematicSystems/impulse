@@ -1,5 +1,4 @@
 <?php
-
 /**
  * imPulse(R) - Group Collaboration Software
  *
@@ -31,24 +30,41 @@
  *
  */
 
-// Set accordingly for your server on config.inc.php
-function getPDO()
+/**
+ * ForumEvents
+ *
+ * Forum Event Notification Constants sent on the forum topic
+ *
+ * @package server
+ * @author Matt Grippaldi
+ * @since 2.0.0
+ */
+class ForumEvent
 {
-   $dbhost = DB_HOST;
-   $dbuser = DB_USER;
-   $dbpass = DB_PASSWORD;
-   $dbname = DB_NAME;
-   $dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);
-   $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-   return $dbh;
+   const DOMAIN = "FORUM";
+   
+   const CREATE = 'CREATE';
+   const UPDATE = 'UPDATE';
+   const DELETE = 'DELETE';
+
+   const ENROLLMENT = 'FORUM_ENROLLMENT';
+   const CHANGE = 'FORUM_CHANGE';
+   const NODE_CHANGE = 'FORUM_NODE_CHANGE';
 }
 
-function mysqliConnect()
+/**
+ * UserEvents
+ *
+ * Forum Event Notification Constants sent on the user topic
+ *
+ * @package server
+ * @author Matt Grippaldi
+ * @since 2.0.0
+ */
+class UserEvent
 {
-   $dbhost = DB_HOST;
-   $dbuser = DB_USER;
-   $dbpass = DB_PASSWORD;
-   $dbname = DB_NAME;
-   $link = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname) or die('Could not connect to database!');
-   return $link;
+   const DOMAIN = "USER";
+    
+   const INVITE = 'USER_INVITE';
+   const REMOVED = 'USER_REMOVED';
 }

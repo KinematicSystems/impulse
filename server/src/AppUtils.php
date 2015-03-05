@@ -45,7 +45,13 @@ class AppUtils
 {
    const USER_ERROR_CODE = 98;
    const DB_ERROR_CODE = 99;
-    
+   private static $testMode = false;
+   private static $stompMode = false;
+   private static $testUserId = null;
+   private static $messageTopic = '/topic/chat.general';
+   private static $topic = '/topic/';
+   private static $session = null;
+
    /**
     * Send an http response with content encoded as JSON
     *
@@ -57,6 +63,35 @@ class AppUtils
       $app->response()->header('Content-Type', 'application/json');
       
       $jsonResponse = json_encode($content, JSON_NUMERIC_CHECK);
+      // AppUtils::logDebug($jsonResponse);
+      
+      $jsonErr = json_last_error();
+      if ($jsonErr != JSON_ERROR_NONE)
+      {
+         $errStr = '';
+         switch ($jsonErr)
+         {
+            case JSON_ERROR_DEPTH:
+               $errStr = ' - Maximum stack depth exceeded';
+               break;
+            case JSON_ERROR_STATE_MISMATCH:
+               $errStr = ' - Underflow or the modes mismatch';
+               break;
+            case JSON_ERROR_CTRL_CHAR:
+               $errStr = ' - Unexpected control character found';
+               break;
+            case JSON_ERROR_SYNTAX:
+               $errStr = ' - Syntax error, malformed JSON';
+               break;
+            case JSON_ERROR_UTF8:
+               $errStr = ' - Malformed UTF-8 characters, possibly incorrectly encoded';
+               break;
+            default:
+               $errStr = ' - Unknown error';
+               break;
+         }
+         AppUtils::logDebug("JSON ERROR " . $errStr);
+      }
       
       // Include support for JSONP requests
       if (!isset($_GET['callback']))
@@ -68,7 +103,6 @@ class AppUtils
          echo $_GET['callback'] . '(' . $jsonResponse . ');';
       }
    }
-
 
    /**
     * Send an http response with 500 status and an error message and error code
@@ -99,6 +133,76 @@ class AppUtils
    }
 
    /**
+    * Send a text message
+    * Always call before sendResponse because the response will be
+    * complete and stomp will throw exceptions in stompMode.
+    *
+    * @param String $msg           
+    */
+   public static function sendMessage($msg)
+   {
+      if (self::$stompMode)
+      {
+         $impulseHeader = array(
+            "sourceUserId" => self::getUserId()
+         );
+         try
+         {
+            $stomp = new Stomp('tcp://localhost:61613', 'admin', 'password');
+            $stomp->send(self::$messageTopic, $msg);
+            unset($stomp);
+         }
+         catch (StompException $e)
+         {
+            self::logError($e, __METHOD__);
+         }
+      }
+   }
+
+   /**
+    * Send a stomp collaboration event message to all or a single user
+    * Always call before sendResponse because the response will be
+    * complete and stomp will throw exceptions.
+    *
+    * @param String $topicId
+    *           could be a userId for a forumId
+    */
+   public static function sendEvent($eventDomain, $topicId, $eventId, 
+      $eventDescription, $eventParameters)
+   {
+      $impulseHeader = array(
+         "sourceUserId" => self::getUserId(),
+         "persistent" => 'false'
+      );
+      
+      $content = array(
+         "type" => $eventId,
+         "description" => $eventDescription,
+         "params" => $eventParameters
+      );
+      $msg = json_encode($content, JSON_NUMERIC_CHECK);
+      
+      if (self::$stompMode)
+      {
+         try
+         {
+            $stomp = new Stomp('tcp://localhost:61613', 'admin', 'password');
+            $stomp->send(self::$topic . $topicId, $msg, $impulseHeader);
+            unset($stomp);
+         }
+         catch (StompException $e)
+         {
+            self::logError($e, __METHOD__);
+         }
+      }
+      else
+      {
+         $pdo = new EventServicePDO();
+         $pdo->pushEvent(self::getUserId(), $eventDomain . '.' . $topicId, $msg);
+      }
+   }
+
+   /**
     * Marshall a NotORM table/result to and array
     * Using this method because iterator_to_array will create
     * an associative array in many cases.
@@ -115,10 +219,10 @@ class AppUtils
       }
       return $ret;
    }
-   
+
    /**
     * Log an error to the PHP error log with class/method/line
-    * 
+    *
     * @param Exception $exception           
     * @param string $method
     *           usually __METHOD__
@@ -135,11 +239,14 @@ class AppUtils
     * Log a debug message
     * Writing to the PHP error log for now.
     *
-    * @param string $message           
+    * @param string $object           
     */
-   public static function logDebug($message)
+   public static function logDebug($object)
    {
-      error_log('DEBUG: ' . $message);
+      if (is_string($object))
+         error_log('DEBUG: ' . $object);
+      else
+         error_log(print_r($object, TRUE));
    }
 
    /**
@@ -176,17 +283,87 @@ class AppUtils
     */
    
    /**
+    * Set to test mode because session will not be available
+    *
+    * @param
+    *           boolean testMode true or false
+    */
+   public static function setTestMode($testMode)
+   {
+      self::$testMode = $testMode;
+   }
+
+   /**
     * Store validated user information in session
     *
     * @param string $userId           
+    * @param string $accessLevel           
     */
-   public static function setLoginValid($userId)
+   public static function setLoginValid($userId, $accessLevel)
    {
-      session_start();
-      session_regenerate_id(); // this is a security measure
-      $_SESSION['userValid'] = 1;
-      $_SESSION['userId'] = $userId;
-      $_SESSION['userAgent'] = md5($_SERVER['HTTP_USER_AGENT']);
+      if (self::$testMode)
+      {
+         self::$testUserId = $userId;
+      }
+      else
+      {
+         /*
+          * Test code trying to get session files to clean up:
+          */
+         // session_cache_limiter('public');
+         // ini_set('session.gc_maxlifetime', 60);
+         // session_cache_expire(1);
+         
+         /*
+          * NO_ZEBRA_SESSION session_start(); session_regenerate_id(); // this
+          * is a security measure // Note: regenerate_id is what leaves an //
+          * orphaned session file with zero length // after logout.
+          */
+         // $lifetime=60;
+         // setcookie(session_name(),session_id(),time()+$lifetime);
+         
+         // SessionManager::sessionStart("impulse", 0, '/', 'localhost:8888',
+         // true);
+         
+         // ZEBRA_SESSION
+         if (!isset(self::$session))
+         {
+            $link = mysqliConnect();
+            self::$session = new Zebra_Session($link, SESSION_HASH);
+         }
+         
+         $_SESSION['userValid'] = 1;
+         $_SESSION['userId'] = $userId;
+         $_SESSION['userAccessLevel'] = $accessLevel;
+         $_SESSION['userAgent'] = md5($_SERVER['HTTP_USER_AGENT']);
+      }
+   }
+
+   /**
+    * Get user ID from session
+    *
+    * @return string User ID
+    */
+   public static function getUserId()
+   {
+      if (self::$testMode)
+      {
+         return self::$testUserId;
+      }
+      else
+      {
+         // ZEBRA_SESSION
+         if (!isset(self::$session))
+         {
+            $link = mysqliConnect();
+            self::$session = new Zebra_Session($link, SESSION_HASH);
+         }
+         
+         if (isset($_SESSION['userId']))
+            return $_SESSION['userId'];
+         else
+            return null;
+      }
    }
 
    /**
@@ -196,17 +373,33 @@ class AppUtils
     */
    public static function isLoggedIn()
    {
-      session_start();
-      
-      if (isset($_SESSION['userValid']) && $_SESSION['userValid'] &&
-          isset($_SESSION['userAgent']) &&
-          ($_SESSION['userAgent'] == md5($_SERVER['HTTP_USER_AGENT'])))
+      if (self::$testMode)
       {
-         return true;
+         return isset(self::$testUserId);
       }
       else
       {
-         return false;
+         // SessionManager::sessionStart("impulse", 0, '/', 'localhost', true);
+         /*
+          * NO_ZEBRA_SESSION session_start();
+          */
+         // ZEBRA_SESSION
+         if (!isset(self::$session))
+         {
+            $link = mysqliConnect();
+            self::$session = new Zebra_Session($link, SESSION_HASH);
+         }
+         
+         if (isset($_SESSION['userValid']) && $_SESSION['userValid'] &&
+             isset($_SESSION['userAgent']) &&
+             ($_SESSION['userAgent'] == md5($_SERVER['HTTP_USER_AGENT'])))
+         {
+            return true;
+         }
+         else
+         {
+            return false;
+         }
       }
    }
 
@@ -215,7 +408,29 @@ class AppUtils
     */
    public static function logout()
    {
-      $_SESSION = array(); // destroy all of the session variables
-      session_destroy();
+      if (!self::$testMode)
+      {
+         $userId = self::getUserId();
+         if (isset($userId))
+         {
+            // Unsubscribe from all events
+            $pdo = new EventServicePDO();
+            $pdo->unsubscribeForUser($userId);
+         }
+         
+         /*
+          * NO_ZEBRA_SESSION $_SESSION = array(); // destroy all of the session
+          * variables session_destroy();
+          */
+         // ZEBRA_SESSION
+         if (!isset(self::$session))
+         {
+            $link = mysqliConnect();
+            self::$session = new Zebra_Session($link, SESSION_HASH);
+         }
+         
+         self::$session->stop();
+         self::$session = null;
+      }
    }
 }

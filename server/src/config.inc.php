@@ -35,6 +35,7 @@ define('DB_NAME', 'impulse');
 define('DB_USER', 'impulse');
 define('DB_PASSWORD', 'csptech');
 define('DB_HOST', '127.0.0.1');
+define('SESSION_HASH', 'iMpulSe321#@');
 
 define('__ROOT__', dirname(dirname(__FILE__)));
 

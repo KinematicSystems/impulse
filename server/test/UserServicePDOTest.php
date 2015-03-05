@@ -42,7 +42,8 @@ class UserServicePDOTest extends PHPUnit_Framework_TestCase
 {
    private $pdo;
    const USER_ID = 'testguy';
-
+   const SETTINGS_DOMAIN = 'TestSettings';
+    
    /**
     * Prepares the environment before running a test.
     */
@@ -106,6 +107,15 @@ class UserServicePDOTest extends PHPUnit_Framework_TestCase
       PHPUnit_Framework_Assert::assertTrue($validated);
       $validated = $this->pdo->validateUser(self::USER_ID, 'testguy1234');
       PHPUnit_Framework_Assert::assertNotTrue($validated);
+      // Validate Update with no password parameter in user 
+      unset($newUser['password']);
+      $newUser['organization'] = 'testOrganization';
+      $this->pdo->update(self::USER_ID, $newUser);
+      $retUser = $this->pdo->get(self::USER_ID);
+      PHPUnit_Framework_Assert::assertEquals('testOrganization', 
+         $retUser['organization']);
+      $validated = $this->pdo->validateUser(self::USER_ID, 'changedPassword');
+      PHPUnit_Framework_Assert::assertTrue($validated);
       
       // All users
       $allUsers = $this->pdo->getAll();
@@ -151,6 +161,32 @@ class UserServicePDOTest extends PHPUnit_Framework_TestCase
       $this->pdo->revokeUserProperty(self::USER_ID, 'TestProp.4');
       $props = $this->pdo->getUserProperties(self::USER_ID);
       PHPUnit_Framework_Assert::assertEquals(0, count($props));
+      
+      // User Settings Tests
+      $settings = $this->pdo->getUserSettingsForDomain(self::USER_ID,self::SETTINGS_DOMAIN);
+      PHPUnit_Framework_Assert::assertEquals(0, count($settings));
+      
+      $this->pdo->setUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.1','TestValue.1');
+      $this->pdo->setUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.2','TestValue.2');
+      $this->pdo->setUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.3','TestValue.3');
+      $this->pdo->setUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.4','TestValue.4');
+
+      $settings = $this->pdo->getAllUserSettings(self::USER_ID);
+      PHPUnit_Framework_Assert::assertEquals(4, count($settings));
+
+      $settings = $this->pdo->getUserSettingsForDomain(self::USER_ID,self::SETTINGS_DOMAIN);
+      PHPUnit_Framework_Assert::assertEquals(4, count($settings));
+      
+      $settingVal = $this->pdo->getUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.4');
+      PHPUnit_Framework_Assert::assertEquals('TestValue.4', $settingVal);
+
+      $this->pdo->setUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.4','TestUpdate.4');
+      $settingVal = $this->pdo->getUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.4');
+      PHPUnit_Framework_Assert::assertEquals('TestUpdate.4', $settingVal);
+      
+      $this->pdo->deleteUserSettingsForDomain(self::USER_ID,self::SETTINGS_DOMAIN);
+      $settings = $this->pdo->getUserSettingsForDomain(self::USER_ID,self::SETTINGS_DOMAIN);
+      PHPUnit_Framework_Assert::assertEquals(0, count($settings));
    }
 }
 

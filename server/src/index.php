@@ -36,6 +36,8 @@
 require_once 'vendor/Slim/Slim.php';
 require_once 'vendor/Slim/Middleware.php';
 require_once 'vendor/NotORM.php';
+require_once 'vendor/Zebra_Session/Zebra_Session.php';
+
 require_once 'dbconn.php';
 require_once 'AppUtils.php';
 require_once 'config.inc.php';
@@ -51,10 +53,15 @@ $app = new \Slim\Slim();
  * REST Services
  */
 require_once 'services/AuthenticationService.php';
+require_once 'services/CollaborationEvents.php';
 require_once 'services/UserService.php';
-require_once 'services/ForumService.php';
+require_once 'services/ForumAdminService.php';
+require_once 'services/ForumFileService.php';
+require_once 'services/ForumPostService.php';
+require_once 'services/ForumEnrollmentService.php';
 require_once 'services/ForumUploadService.php';
 require_once 'services/SettingsService.php';
+require_once 'services/EventService.php';
 
 /*
  * Add the SessionAuth HTTP interceptor that will ensure that every call is

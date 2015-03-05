@@ -94,8 +94,9 @@ class AuthenticationService
          if ($userService->validateUser($login['userId'], $login['password']))
          {
             //AppUtils::logDebug($login['userId'].' Successfully logged in.');
-            AppUtils::setLoginValid($login['userId']);
-            AppUtils::sendResponse($login['userId']);
+            $access = $userService->getAccess($login['userId']);
+            AppUtils::setLoginValid($login['userId'],$access);
+            AppUtils::sendResponse($access);
          }
          else
          {

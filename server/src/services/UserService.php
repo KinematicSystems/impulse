@@ -32,6 +32,10 @@
 require_once 'UserServicePDO.php';
 
 // Slim Framework Route Mappings
+// (order matters if you move password below /user/:id it will think the user id
+// is password)
+$app->put('/users/password', 'UserService::updatePassword');
+$app->get('/users/access', 'UserService::getAccess');
 $app->post('/users/:id', 'UserService::create');
 $app->get('/users/:id', 'UserService::get');
 $app->get('/users', 'UserService::getAll');
@@ -41,6 +45,14 @@ $app->get('/users/:id/properties', 'UserService::getUserProperties');
 $app->put('/users/:id/property/:propId', 'UserService::assignUserProperty');
 $app->delete('/users/:id/property/:propId', 'UserService::revokeUserProperty');
 $app->get('/properties', 'UserService::getAllProperties');
+$app->get('/users/:id/settings', 'UserService::getAllUserSettings');
+$app->get('/users/:id/settings/:domain', 
+   'UserService::getUserSettingsForDomain');
+$app->get('/users/:id/settings/:domain/:settingKey', 
+   'UserService::getUserSetting');
+$app->put('/users/:id/settings/:domain/:settingKey', 
+   'UserService::setUserSetting');
+$app->get('/users/:id/events', 'UserService::getEvents');
 
 /**
  * UserService
@@ -163,6 +175,51 @@ class UserService
 
    /**
     *
+    * @see UserServicePDO::updatePassword()
+    */
+   public static function updatePassword()
+   {
+      $app = \Slim\Slim::getInstance();
+      $id = AppUtils::getUserId();
+      
+      try
+      {
+         $pdo = new UserServicePDO();
+         $user = $pdo->get($id);
+         if (isset($user))
+         {
+            // get and decode JSON request body
+            $request = $app->request();
+            $body = $request->getBody();
+            $passwordData = (array) json_decode($body);
+            
+            $pdo->updatePassword($id, $passwordData['oldPassword'], 
+               $passwordData['newPassword']);
+            AppUtils::sendResponse(
+               array(
+                  "success" => true,
+                  "message" => "Password changed."
+               ));
+         }
+         else
+         {
+            AppUtils::sendResponse(
+               array(
+                  "success" => false,
+                  "message" => "The user with ID $id does not exist!"
+               ));
+         }
+      }
+      catch (Exception $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error updating password for user with ID $id", $e->getMessage());
+      }
+   }
+
+   /**
+    *
     * @see UserServicePDO::delete()
     */
    public static function delete($id)
@@ -179,6 +236,28 @@ class UserService
          AppUtils::logError($e, __METHOD__);
          AppUtils::sendError($e->getCode(), "Error deleting user with ID $id", 
             $e->getMessage());
+      }
+   }
+
+   /**
+    *
+    * @see UserServicePDO::getAccess()
+    */
+   public static function getAccess()
+   {
+      $id = AppUtils::getUserId();
+      
+      try
+      {
+         $pdo = new UserServicePDO();
+         $access = $pdo->getAccess($id);
+         AppUtils::sendResponse($access);
+      }
+      catch (PDOException $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting access level for user with ID $id", $e->getMessage());
       }
    }
    
@@ -266,6 +345,104 @@ class UserService
       {
          AppUtils::logError($e, __METHOD__);
       }
+   }
+   
+   // **
+   // ** User Settings Methods
+   // **
+   /**
+    *
+    * @see UserServicePDO::getAllUserSettings()
+    */
+   public static function getAllUserSettings($id)
+   {
+      try
+      {
+         $pdo = new UserServicePDO();
+         $props = $pdo->getAllUserSettings($id);
+         AppUtils::sendResponse($props);
+      }
+      catch (PDOException $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting all user settings for user $id", $e->getMessage());
+      }
+   }
+
+   /**
+    *
+    * @see UserServicePDO::getUserSettingsForDomain()
+    */
+   public static function getUserSettingsForDomain($id, $domain)
+   {
+      try
+      {
+         $pdo = new UserServicePDO();
+         $settings = $pdo->getUserSettingsForDomain($id, $domain);
+         AppUtils::sendResponse($settings);
+      }
+      catch (PDOException $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting settings for user with ID $id", $e->getMessage());
+      }
+   }
+
+   /**
+    *
+    * @see UserServicePDO::getUserSetting()
+    */
+   public static function getUserSetting($id, $domain, $settingKey)
+   {
+      try
+      {
+         $pdo = new UserServicePDO();
+         $setting = $pdo->getUserSetting($id, $domain, $settingKey);
+         AppUtils::sendResponse($setting);
+      }
+      catch (PDOException $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting setting domain $domain for user with ID $id main/$settingKey)", 
+            $e->getMessage());
+      }
+   }
+
+   /**
+    *
+    * @see UserServicePDO::setUserSetting()
+    */
+   public static function setUserSetting($id, $domain, $settingKey)
+   {
+      $app = \Slim\Slim::getInstance();
+      
+      try
+      {
+         $pdo = new UserServicePDO();
+         // get and decode JSON request body
+         $request = $app->request();
+         $body = $request->getBody();
+         $settingData = (array) json_decode($body);
+         $settingValue = $settingData['settingValue'];
+         
+         $pdo->setUserSetting($id, $domain, $settingKey, $settingValue);
+         AppUtils::sendResponse($settingValue);
+      }
+      catch (Exception $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error setting value for user $id setting $domain/$settingKey", 
+            $e->getMessage());
+      }
+   }
+
+   public static function getEvents($id)
+   {
+      AppUtils::sendResponse(AppUtils::getEvents());
    }
 }
 
