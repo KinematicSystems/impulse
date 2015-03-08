@@ -19,13 +19,6 @@ module.exports = function(grunt) {
             dest : 'build/<%= pkg.name %>.min.js'
          }
       },
-      release : {
-         copy : {
-            files : [ 
-              { src : 'dist', dest : '/src/www/htdocs/impulse-staging/'}
-            ]
-         }
-      },
       copy : {
          vendor : {
             files : [ 
@@ -68,7 +61,9 @@ module.exports = function(grunt) {
               { src : 'vendor/rangy/rangy-selectionsaverestore.min.js', dest : 'dist/'},
               { src : 'vendor/moment/min/moment.min.js', dest : 'dist/'},
               { src : 'vendor/angular-bootstrap-calendar/dist/css/angular-bootstrap-calendar.min.css', dest : 'dist/'},
+              { src : 'vendor/angular-bootstrap-calendar/dist/css/angular-bootstrap-calendar.min.css.map', dest : 'dist/'},
               { src : 'vendor/angular-bootstrap-calendar/dist/js/angular-bootstrap-calendar-tpls.min.js', dest : 'dist/'},
+              { src : 'vendor/angular-bootstrap-calendar/dist/js/angular-bootstrap-calendar-tpls.min.js.map', dest : 'dist/'},
               { src : 'vendor/angular-toastr/dist/angular-toastr.min.js', dest : 'dist/'},
               { src : 'vendor/angular-toastr/dist/angular-toastr.min.css', dest : 'dist/'}
            ]
@@ -84,6 +79,9 @@ module.exports = function(grunt) {
        },
          main : {
             src : 'src/index.html', dest : 'dist/index.html'
+        },
+       release : {
+           expand: true, cwd : 'dist/', src: '**', dest : '/src/www/htdocs/impulse-staging/'
         }
       },
       jshint : {
