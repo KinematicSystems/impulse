@@ -1,0 +1,28 @@
+
+<div class="modal-content">
+   <div class="modal-header dialog-header-wait">
+      <h4 class="modal-title">
+         <span class="glyphicon glyphicon-file"></span>
+         {{dialogHeading}}
+      </h4>
+   </div>
+   <div class="modal-body">
+      <!-- User List -->
+      <ul id="inviteNav" class="nav nav-stacked">
+         <li ng-repeat="user in userList">
+            <!-- User contains all fields from forum_user, user_account, and forumName -->
+            <a href="" ng-click="">
+               <span style="float: left; font-weight: 500;">{{user.firstName + ' ' + user.lastName}}</span>
+               <span style="float: right;">{{user.userId}}</span>
+               <br>
+               <span style="float: left; color: #888;">{{user.email}}</span>
+               <span class="glyphicon glyphicon-share" title="Send Invite"
+                  ng-click="inviteUser(user)" style="color: Green; float: right;"></span>
+            </a>
+         </li>
+      </ul>
+   </div>
+   <div class="modal-footer">
+      <button type="button" class="btn btn-primary" ng-click="cancel()">Done</button>
+    </div>
+</div>

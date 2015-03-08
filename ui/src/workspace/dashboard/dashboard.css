@@ -1,0 +1,23 @@
+@CHARSET "UTF-8";
+
+#dashboard {
+	margin: 0px;
+}
+
+#dashboard .panel-body {
+	padding: 8px;
+	max-height: 290px;
+	overflow: auto;
+}
+
+#dashboard .panel, .alert {
+	margin-bottom: 9px;
+}
+
+#dashboard .row {
+	margin: 10px;
+}
+
+#dashboard .col-md-6 {
+	padding: 6px;
+}

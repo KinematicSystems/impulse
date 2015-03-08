@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en" ng-app="workspaceApp">
+<head>
+<title>imPulse Workspace</title>
+<link rel="shortcut icon" href="../common/images/impulse-icon-20x20.png">
+
+<script src="../vendor/jquery/dist/jquery.min.js"></script>
+<script src="../vendor/ng-file-upload/angular-file-upload-shim.min.js"></script>
+<script src="../vendor/angular/angular.min.js"></script>
+<script src="../vendor/angular-messages/angular-messages.min.js"></script>
+<script src="../vendor/angular-animate/angular-animate.min.js"></script>
+<script src="../vendor/angular-sanitize/angular-sanitize.min.js"></script>
+
+<script src="../vendor/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+<link href="../vendor/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="../vendor/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
+
+<script src="../vendor/angular-inview/angular-inview.js"></script>
+
+<!-- FOR STOMP OVER WEB SOCKETS (3 Files)
+<script src="../vendor/sockjs-client/dist/sockjs.js"></script>
+<script src="../vendor/stomp-websocket/lib/stomp.min.js"></script>
+<script src="core-services/stomp-event-service.js"></script>
+-->
+<!-- FOR IMPULSE POLLING EVENT SERVICE (1 File) -->
+<script src="core-services/impulse-event-service.js"></script>
+
+<link href="../vendor/components-font-awesome/css/font-awesome.min.css" rel="stylesheet">
+
+<link rel="stylesheet/less" type="text/css" href="css/workspace.less">
+<link rel="stylesheet" href="css/animate.css">
+
+<link href="../vendor/angular-dialog-service/dist/dialogs.min.css" rel="stylesheet">
+<script src="../vendor/angular-dialog-service/dist/dialogs.min.js"></script>
+
+<script src="../vendor/ng-table/ng-table.min.js"></script>
+<link rel="stylesheet" href="../vendor/ng-table/ng-table.min.css">
+<script src="../vendor/ng-file-upload/angular-file-upload.min.js"></script>
+
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
+<link rel="stylesheet" href="../vendor/leaflet/dist/leaflet.css">
+<script src="../vendor/leaflet/dist/leaflet.js"></script>
+<script src="../vendor/leaflet-plugins/layer/tile/Google.js"></script>
+<script src="../vendor/angular-leaflet-directive/dist/angular-leaflet-directive.min.js"></script>
+<script src="../vendor/rangy/rangy-core.min.js"></script>
+<script src="../vendor/rangy/rangy-selectionsaverestore.min.js"></script>
+<script src="../vendor/textAngular/dist/textAngular-rangy.min.js"></script>
+<script src="../vendor/textAngular/dist/textAngular-sanitize.min.js"></script>
+<script src="../vendor/textAngular/dist/textAngular.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="../vendor/angular-toastr/dist/angular-toastr.min.css" />
+<script type="text/javascript" src="../vendor/angular-toastr/dist/angular-toastr.min.js"></script>
+
+<script src="../vendor/moment/min/moment.min.js"></script>
+<link rel="stylesheet" href="../vendor/angular-bootstrap-calendar/dist/css/angular-bootstrap-calendar.min.css">
+<script src="../vendor/angular-bootstrap-calendar/dist/js/angular-bootstrap-calendar-tpls.min.js"></script>
+
+
+<script src="../common/impulse/impulse-service.js"></script>
+<script src="../common/impulse/impulse-filters.js"></script>
+<script src="../common/login/login-service.js"></script>
+<script src="../common/login/login-module.js"></script>
+<link rel="stylesheet" href="forum-explorer/explorer.css">
+<link rel="stylesheet" href="dashboard/dashboard.css">
+<link rel="stylesheet" href="forum-manager/manager.css">
+<link rel="stylesheet/less" type="text/css" href="forum-post/forumpost.less">
+<link rel="stylesheet" href="settings/settings.css">
+
+<script src="core-services/forum-service.js"></script>
+<script src="core-services/settings-service.js"></script>
+<script src="topbar/topbar-module.js"></script>
+<script src="map/map-service.js"></script>
+<script src="map/map-module.js"></script>
+<script src="calendar/calendar-module.js"></script>
+<script src="forum-explorer/explorer-module.js"></script>
+<script src="forum-post/forumpost-service.js"></script>
+<script src="forum-post/forumpost-module.js"></script>
+<script src="forum-manager/manager-service.js"></script>
+<script src="forum-manager/manager-module.js"></script>
+<script src="settings/settings-module.js"></script>
+<script src="dashboard/dashboard-service.js"></script>
+<script src="dashboard/dashboard-module.js"></script>
+
+<script src="directives/workspace-directives.js"></script>
+<link rel="stylesheet" href="directives/userlink/userlink.css">
+<script src="directives/userlink/userlink.js"></script>
+<link rel="stylesheet" href="directives/usercard/usercard.css">
+<script src="directives/usercard/usercard.js"></script>
+<link rel="stylesheet" href="directives/enrollmentlist/enrollmentlist.css">
+<script src="directives/enrollmentlist/enrollmentlist.js"></script>
+<script src="directives/locationlink/locationlink.js"></script>
+<script src="directives/datelink/datelink.js"></script>
+<link rel="stylesheet" href="directives/postedit/postedit.css">
+<script src="directives/postedit/postedit.js"></script>
+
+<script src="workspace-app.js"></script>
+
+<!-- set options before less.js script -->
+<script>
+   less = {
+      env: "development",
+      async: false,
+      fileAsync: false,
+      poll: 1000,
+      functions: {},
+      dumpLineNumbers: "comments",
+      relativeUrls: false,
+      rootpath: ":/"
+   };
+</script>
+<script src="../vendor/less/dist/less.min.js"></script>
+
+
+</head>
+<body ng-controller="WorkspaceController">
+   <div id="topBar" ng-include="'topbar/topbar.html'"></div>
+   <div id="desktop">
+      <div id="sideBar" ng-show="userId" ng-include="'sidebar.html'" 
+         ng-class="{'sidebarCollapsed': $parent.sidebarCollapsed, 'sidebarExpanded': !$parent.sidebarCollapsed}"></div>
+      <div id="forumBar" ng-if="isCollaborator" ng-include="'forum-explorer/explorer.html'" ng-show="forumExplorerVisible" class="forumBar-show ng-hide">
+      </div>
+      <div id="workspace">
+         <div ng-include="'../common/login/login.tpl.html'" ng-show="currentPage==='login'"></div>
+         <div ng-include="'dashboard/dashboard.html'" ng-show="currentPage==='dashboard'"></div>
+         <div ng-include="'forum-post/forumpost.html'" ng-show="currentPage==='forumpost'"></div>
+         <div ng-include="'settings/settings.html'" ng-show="currentPage==='settings'"></div>
+         <div ng-include="'forum-manager/manager.html'" ng-show="currentPage==='forumManager'"></div>
+         <div ng-include="'map/map.html'" ng-show="currentPage==='map'"></div>
+         <div ng-include="'calendar/calendar.html'" ng-show="currentPage==='calendar'"></div>
+      </div>
+   </div>
+</body>
+</html>

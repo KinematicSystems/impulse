@@ -1,0 +1,179 @@
+/* Workspace */
+@import "theme.less";
+
+@lightText: #EEE;
+
+body {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+}
+
+#topBar {
+	position: fixed;
+	top: 0px;
+	height: 32px;
+	left: 0px;
+	right: 0px;
+	padding-left: 6px;
+	padding-right: 12px;
+	background-color: #111;
+	background-image: linear-gradient(to bottom, #3C3C3C 0%, #111 100%);
+	background-repeat: repeat-x;
+}
+
+.topBarLogo {
+   display: inline-block;
+   width: 100px;
+   height: 20px;
+   margin-top: 4px;
+   background-image: url("@{headerImage}");
+   background-repeat: no-repeat;
+}
+
+#desktop {
+	position: fixed;
+	display: table;
+	top: 32px;
+	width: 100%;
+	height: 100%;
+	background-color: #66F;
+	/*   overflow: hidden;*/
+}
+
+#sideBar {
+	display: table-cell;
+	height: auto;
+	vertical-align: top;
+	background-color: #222;
+	padding-top: 6px;
+}
+
+#forumBar {
+	display: table-cell;
+	/* width: 230px;  set by animation */
+	height: auto;
+	vertical-align: top;
+	background-color: #000;
+}
+
+.forumBar-show {
+	width: 230px;
+	overflow: auto;
+}
+
+.forumBar-show.ng-hide-add.ng-hide-add-active, .forumBar-show.ng-hide-remove.ng-hide-remove-active
+	{
+	-webkit-transition: all linear 180ms;
+	transition: all linear 180ms;
+}
+
+.forumBar-show.ng-hide {
+	width: 0;
+	overflow: hidden;
+}
+
+#workspace {
+	display: table-cell;
+	width: auto;
+	height: auto;
+	vertical-align: top;
+	background-color: #fff;
+}
+
+
+.sidebarCollapsed {
+	width: 32px;
+}
+
+.sidebarExpanded {
+	width: 160px;
+}
+
+#sideBar a {
+	color: @lightText;
+	font-weight: normal;
+	padding-left: 8px;
+   text-decoration: none;
+}
+
+#sideBar a:hover {
+	color: @baseColor;
+}
+
+.sidebarItem {
+	margin-bottom: 4px;
+}
+
+.sidebarItem .glyphicon {
+	padding-right: 3px;
+}
+
+.sidebarItem .bold {
+	font-weight: bold;
+}
+
+.loginBlock {
+	padding-top: 4px;
+	color: @lightText;
+	float: right;
+}
+
+.loginBlock a {
+	color: @baseColor;
+}
+
+.badgeBlock {
+	float: right;
+	margin-right: 20px;
+	margin-top: 6px;
+	color: @lightText;
+	/*font-weight: lighter;*/
+	font-size: smaller;
+}
+
+.badgeBlock span.badgeOn {
+    color: @baseColor;
+}
+
+/* A consistent page header to be used for modules that need one */
+.moduleHeading {
+   background-color: #EEE;
+   background-image: linear-gradient(to bottom, #EEE 0%, #DDD 100%);
+   padding: 3px 0px 3px 20px;
+   text-align: left;
+   font-size: large;
+   border-bottom: 1px solid;
+   border-bottom-color: #CCC
+}
+
+/* A consistent scrolling module container to be used for modules that need one */
+.moduleHeading {
+   background-color: #EEE;
+   background-image: linear-gradient(to bottom, #EEE 0%, #DDD 100%);
+   padding: 3px 0px 3px 20px;
+   text-align: left;
+   font-size: large;
+   border-bottom: 1px solid;
+   border-bottom-color: #CCC
+}
+
+.moduleContainer {
+   position: absolute;
+   overflow-y: auto;
+   height: 100%;
+}
+
+/* Bootstrap Panel Collapse */
+.panel-heading a:after {
+    font-family:'Glyphicons Halflings';
+    content:"\e114";
+    float: right;
+    color: grey;
+}
+.panel-heading a.collapsed:after {
+    content:"\e080";
+}
+.panel-title {
+   font-weight: normal;
+}

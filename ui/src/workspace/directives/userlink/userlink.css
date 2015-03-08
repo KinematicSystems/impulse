@@ -1,0 +1,12 @@
+.userLink {
+	
+}
+
+.userLink-details {
+	position: absolute;
+	left: 300px;
+	top: 100px;
+	background-color: #FAF7E4;
+	border: 1px solid;
+	padding: 6px;
+}

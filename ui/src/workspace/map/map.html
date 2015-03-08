@@ -1,0 +1,4 @@
+<div id="mapContainer" ng-controller="MapController">
+   <div><button ng-click="redrawMap()">Redraw Map</button></div>
+   <leaflet center="berlin" in-view="isInView($index, $inview, $inviewpart)" markers="markers" layers="layers" style="height: 600px;"></leaflet>
+</div>

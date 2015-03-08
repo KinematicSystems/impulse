@@ -1,0 +1,10 @@
+@CHARSET "UTF-8";
+
+.post-editor {
+}
+
+.post-editor .ta-scroll-window {
+   overflow-y: auto;
+   height: inherit;
+   min-height: 400px;
+}

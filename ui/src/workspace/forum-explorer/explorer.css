@@ -1,0 +1,218 @@
+
+#forumExplorer {
+   position: absolute;
+	overflow: hidden;
+	height: 100%;
+	width: inherit;
+   background-color: #cccccc;
+}
+
+#forumExplorer .btn:focus {
+	outline: none;
+}
+
+#forumExplorer .container {
+   outline: none;
+   background-color: #cccccc;
+}
+
+#forumExplorer .toolRow {
+	width: 228px;
+   height: 30px;
+	background-color: #eeeeee;
+	display: inline-block;
+}
+
+.forum-stretch {
+	width: 228px;
+	padding: 0;
+	height: 100%;
+	border-radius: 0;
+}
+
+.forum-path-container {
+   width: 227px;
+}
+
+.forum-path {
+	width: inherit;
+	height: 20px;
+	font-style: italic;
+	font-size: smaller;
+	white-space: nowrap;
+	overflow: hidden;
+	/* "overflow" value must be different from "visible" */
+	/* text-overflow: ellipsis; */
+	direction: rtl;
+	margin: 1px;
+	color: #777;
+	padding-right: 4px;
+   background-color: #fff;
+}
+
+.hidden-file-input {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 28px;
+	width: 32px;
+	font-size: 999px;
+	text-align: right;
+	filter: alpha(opacity = 0);
+	opacity: 0;
+	outline: none;
+	background: white;
+	cursor: inherit;
+	display: block;
+}
+
+/* Forum Browser in Node Mode */
+.forum-browser {
+	background-color: #eee;
+	width: 229px;
+	position: absolute;
+	top: 82px;
+	bottom: 0px;
+	overflow: auto;
+}
+
+.forum-browser>li {
+	margin-top: 1px;
+	margin-left: 0;
+	margin-right: 1px;
+	margin-bottom: 0px;
+}
+
+.forum-browser>li+li {
+	margin-top: 1px;
+	margin-left: 0;
+	margin-right: 1px;
+	margin-bottom: 1px;
+}
+
+.forum-browser>li>a {
+	border-radius: 0px;
+	color: #111;
+	background-color: #fff;
+	padding-right: 8px;
+}
+
+.forum-browser>li>a>div {
+	white-space: nowrap;
+	width: 172px;
+	/* need to leave room for scrollbar otherwise 182px would work */
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: inline-block;
+}
+
+.forum-browser>li.active>a {
+	
+}
+
+.forum-browser>li.active>a:hover, .forum-browser>li.active>a:focus {
+	color: #111;
+	background-color: #F8F8FF;
+}
+
+/* Forum Browser in Edit Mode */
+.forum-browser-edit {
+	background-color: #FCCE56; /* appears as orange border around items */
+	width: 228px;
+	position: absolute;
+	top: 82px;
+	bottom: 0px;
+	overflow: auto;
+}
+
+.forum-browser-edit>li {
+	margin-top: 1px;
+	margin-left: 0;
+	margin-right: 1px;
+	margin-bottom: 0px;
+	display: flex;
+}
+
+.forum-browser-edit>li+li {
+	margin-top: 1px;
+	margin-left: 0;
+	margin-right: 1px;
+	margin-bottom: 1px;
+	display: flex;
+}
+
+.forum-browser-edit>li>a {
+	border-radius: 0px;
+	color: #111;
+	background-color: #fff;
+}
+
+.forum-browser-edit>li.active>a {
+	text-decoration: underline;
+	color: #008ecc;
+}
+
+.forum-browser-edit>li.active>a:hover, .foorum-browser-edit>li.active>a:focus
+	{
+	text-decoration: underline;
+	color: #008ecc;
+	background-color: #F8F8FF;
+}
+
+.forum-upload-abort {
+	float: right;
+	color: #b22222;
+	ont-style: italic;
+}
+
+/* Forum Browser in User Mode */
+.user-browser {
+	background-color: #eee;
+	width: 228px;
+	position: absolute;
+	top: 61px;
+	bottom: 0px;
+	overflow: auto;
+}
+
+.user-browser>li {
+	margin-top: 1px;
+	margin-left: 0;
+	margin-right: 1px;
+	margin-bottom: 0px;
+}
+
+.user-browser>li+li {
+	margin-top: 1px;
+	margin-left: 0;
+	margin-right: 1px;
+	margin-bottom: 1px;
+}
+
+.user-browser>li>a {
+	border-radius: 0px;
+	color: #111;
+	background-color: #fff;
+	padding-right: 8px;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	height: 50px;
+}
+
+.user-browser>li>a>div {
+	white-space: nowrap;
+	width: 172px;
+	/* need to leave room for scrollbar otherwise 182px would work */
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: inline-block;
+}
+
+.user-browser>li.active>a {
+	
+}
+
+.user-browser>li.active>a:hover, .forum-browser>li.active>a:focus {
+	color: #111;
+	background-color: #F8F8FF;
+}

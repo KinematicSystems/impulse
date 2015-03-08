@@ -1,0 +1,76 @@
+<div id="forumManager" ng-controller="ForumManagerController">
+   <div class="moduleHeading">
+      Forum Management
+      <span ng-if="editMode != 'M'">{{headingText}}</span>
+
+      <span class="controlbar">
+         <button ng-if="editMode == 'M'" class="btn btn-xs btn-primary" ng-click="editForum(null)">New Forum</button>
+         <!--  AngularJS Bug filter wont woek if ng-id is used so use ng-show -->
+         <input ng-show="editMode == 'I'" ng-model="inviteFilter" class="form-control" placeholder="Search">
+         <button ng-if="editMode == 'I'" class="btn btn-xs btn-primary" ng-click="changeEditMode('M')">Done</button>
+      </span>
+   </div>
+   <div class="moduleContainer">
+
+      <div class="container-fluid">
+         <div ng-if="editMode == 'M'" style="margin-top: 18px;">
+            <div class="col-md-12">
+               <div class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">
+                        <a ng-class="{'collapsed': invitationsCollapsed}"
+                           ng-click="invitationsCollapsed = !invitationsCollapsed" href="">Invitations</a>
+                     </h3>
+                  </div>
+                  <!-- Don't put collapse on panel body, transition is slow/stutters (mattg) -->
+                  <div collapse="invitationsCollapsed">
+                     <div enrollment-list enrollment-status="I"></div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-md-12">
+               <div ng-init="pendingCollapsed = true" class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">
+                        <a ng-class="{'collapsed': pendingCollapsed}" ng-click="pendingCollapsed = !pendingCollapsed"
+                           href="">Pending Join Requests</a>
+                     </h3>
+                  </div>
+                  <!-- Don't put collapse on panel body, transition is slow/stutters (mattg) -->
+                  <div collapse="pendingCollapsed">
+                     <div enrollment-list enrollment-status="P"></div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-md-12">
+               <div ng-init="forumsCollapsed = false" class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">
+                        <a ng-class="{'collapsed': forumsCollapsed}" ng-click="forumsCollapsed = !forumsCollapsed"
+                           href=""> My Forums</a>
+                     </h3>
+                  </div>
+                  <!-- Don't put collapse on panel body, transition is slow/stutters (mattg) -->
+                  <div collapse="forumsCollapsed">
+                     <div enrollment-list on-invite="inviteForum" on-leave="leaveForum" on-edit="editForum"
+                        on-delete="deleteForum" enrollment-status="J"></div>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div ng-if="editMode == 'I'">
+            <span ng-if="inviteList.length == 0">There are no eligible users for invitation to this forum</span>
+            <div ng-if="inviteList.length > 0">
+               <div ng-repeat="user in inviteList | filter:inviteFilter" class="card-container">
+                  <!-- User contains all fields from forum_user, user_account, and forumName -->
+                  <div user-card user-model="user">
+                     <a href="" style="color: Green; float: right;" ng-click="inviteUser(user)">
+                        <span class="glyphicon glyphicon-share" title="Send Invite"></span>
+                        <span>Invite</span>
+                     </a>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>

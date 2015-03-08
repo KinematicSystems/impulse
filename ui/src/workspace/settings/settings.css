@@ -1,0 +1,32 @@
+@CHARSET "UTF-8";
+
+#settingsPage {
+	margin: 0px;
+}
+
+#settingsPage .panel-heading {
+	font-weight: normal;
+}
+
+#settingsPage .panel-body {
+	padding: 8px;
+	overflow: auto;
+	min-width: 340px;
+}
+
+#settingsPage .row {
+	margin: 10px;
+}
+
+#settingsPage .col-md-6 {
+	padding: 6px;
+}
+
+#settingsPage .col-md-12 {
+	padding: 6px;
+}
+
+#settingsPage .form-group {
+	margin-right: 0px;
+	margin-left: 0px;
+}

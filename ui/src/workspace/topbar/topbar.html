@@ -1,0 +1,22 @@
+<div ng-controller="TopbarController">
+<span class="topBarLogo"></span>
+<span ng-if="userId" class="loginBlock">
+   <a href="" ng-click="logout()">{{userId}}</a>
+</span>
+<span ng-if="isCollaborator" class="badgeBlock">
+   <span ng-class="{ 'badgeOn': messageCount }" class="glyphicon glyphicon-cog"></span>
+   <span ng-class="{ 'badgeOn': messageCount }" ng-bind="messageCount"></span>
+   &nbsp;
+   <span ng-class="{ 'badgeOn': dashboardCount }" class="glyphicon glyphicon-dashboard"></span>
+   <span ng-class="{ 'badgeOn': dashboardCount }" ng-bind="dashboardCount"></span>
+   &nbsp;
+   <span ng-class="{ 'badgeOn': statCounts[2] }" class="glyphicon glyphicon-comment"></span>
+   <span ng-class="{ 'badgeOn': statCounts[2] }">{{statCounts[2]}}</span>
+   &nbsp;
+   <span ng-class="{ 'badgeOn': statCounts[3] }" class="glyphicon glyphicon-paperclip"></span>
+   <span ng-class="{ 'badgeOn': statCounts[3] }">{{statCounts[3]}}</span>
+   &nbsp;
+   <span ng-class="{ 'badgeOn': statCounts[4] }" class="glyphicon glyphicon-calendar"></span>
+   <span ng-class="{ 'badgeOn': statCounts[4] }">{{statCounts[4]}}</span>
+</span>
+</div>

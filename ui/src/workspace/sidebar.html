@@ -1,0 +1,89 @@
+<!-- Because the ngInclude directive creates its own scope $parent must be used on the variables -->
+ <div class="sidebarItem">
+    <a href="" ng-click="$parent.sidebarCollapsed = !$parent.sidebarCollapsed">
+      <span ng-if="$parent.sidebarCollapsed" class="glyphicon glyphicon-circle-arrow-right" title="Expand Sidebar"></span>
+      <span ng-if="!$parent.sidebarCollapsed" class="glyphicon glyphicon-circle-arrow-left" title="Collapse Sidebar"></span>
+      <span ng-if="!$parent.sidebarCollapsed">Collapse</span>
+    </a>
+  </div>
+  <div style="margin-bottom: 10px;"></div>
+  <div  class="sidebarItem">
+    <a href="" ng-click="$parent.forumExplorerVisible = !$parent.forumExplorerVisible">
+      <span ng-if="$parent.forumExplorerVisible" class="glyphicon glyphicon-folder-open" title="Hide Forums &amp; Files"></span>
+      <span ng-if="!$parent.forumExplorerVisible" class="glyphicon glyphicon-folder-close" title="Show Forums &amp; Files"></span>
+      <span ng-if="!$parent.sidebarCollapsed">File Explorer</span>
+    </a>
+  </div>
+ <div  class="sidebarItem">
+    <a href="" ng-click="$parent.currentPage='dashboard'">
+       <span class="glyphicon glyphicon-dashboard" title="Dashboard"></span>
+       <span ng-if="!$parent.sidebarCollapsed">Dashboard</span>
+    </a>
+  </div>
+  <div class="sidebarItem">
+    <a href="" ng-click="$parent.currentPage='forumpost'">
+       <span class="glyphicon glyphicon-book" title="Forum Log"></span>
+       <span ng-if="!$parent.sidebarCollapsed">Forum Posts</span>
+    </a>
+  </div>
+  <div  class="sidebarItem">
+    <a href="" ng-click="">
+      <span class="glyphicon glyphicon-envelope" title="Messages"></span>
+      <span ng-if="!$parent.sidebarCollapsed">Messages</span>
+    </a>
+  </div>
+  <div  class="sidebarItem">
+    <a href="" ng-click="$parent.currentPage='calendar'">
+    <!-- TODO Need to figure out how to make font awesome and glyph be the same width fa=15px glyph=17px -->
+      <span style="width: 17px;" class="fa fa-calendar" title="Calendar"></span>
+      <span ng-if="!$parent.sidebarCollapsed">Calendar</span>
+    </a>
+  </div>
+  <div class="sidebarItem" style="margin-bottom: 20px;">
+    <a href="" ng-click="">
+      <span class="glyphicon glyphicon-search" title="Search"></span>
+      <span ng-if="!$parent.sidebarCollapsed">Search</span>
+    </a>
+  </div>
+ 
+  <div class="sidebarItem">
+    <a href="" ng-click="$parent.currentPage='map'">
+      <span class="glyphicon glyphicon-map-marker" title="Map"></span>
+      <span ng-if="!$parent.sidebarCollapsed">Map</span>
+    </a>
+  </div>
+  <div style="margin-bottom: 200px;"></div>
+  <div  class="sidebarItem">
+    <a href="" ng-click="$parent.currentPage='forumManager'">
+    <!-- TODO Need to figure out how to make font awesome and glyph be the same width fa=15px glyph=17px -->
+      <span style="width: 17px;" class="fa fa-group" title="Manage Forums"></span>
+      <span ng-if="!$parent.sidebarCollapsed">Manage Forums</span>
+    </a>
+  </div>
+  <div class="sidebarItem">
+    <a href="" ng-click="$parent.currentPage='settings'">
+      <span class="glyphicon glyphicon-cog" title="Settings"></span>
+      <span ng-if="!$parent.sidebarCollapsed">Settings</span>
+    </a>
+  </div>
+  <div class="sidebarItem">
+    <a href="" ng-click="$parent.synchronize()">
+      <span class="glyphicon glyphicon-refresh" title="Synchronize"></span>
+      <span ng-if="!$parent.sidebarCollapsed">Synchronize</span>
+    </a>
+  </div>
+  <div class="sidebarItem">
+    <a href="" ng-click="$parent.togglePolling()">
+      <span class="glyphicon glyphicon-off" title="Polling"></span>
+      <span ng-if="!$parent.sidebarCollapsed && $parent.isPolling">Stop Polling</span>
+      <span ng-if="!$parent.sidebarCollapsed && !$parent.isPolling">Start Polling</span>
+    </a>
+  </div>
+ <!-- For debugging login -->
+   <div class="sidebarItem">
+    <a href="" ng-click="$parent.currentPage='login'">
+      <span class="glyphicon glyphicon-log-in"  title="Login"></span>
+      <span ng-if="!$parent.sidebarCollapsed">Login</span>
+    </a>
+  </div>
+  

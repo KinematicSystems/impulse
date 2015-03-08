@@ -1,0 +1,26 @@
+
+<!--   
+TINYMCE
+<script type="text/javascript">
+  tinymce.init({
+      selector: "textarea",
+      plugins: [
+          "advlist autolink lists link image charmap print preview anchor",
+          "searchreplace visualblocks code fullscreen",
+          "insertdatetime media table contextmenu paste moxiemanager"
+      ],
+      toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image"
+  });
+  </script>
+  <form method="post" action="somepage">
+      <textarea id="blogEditor" name="content" style="width:100%"></textarea>
+  </form>
+ -->
+<form style="width: 90%; margin: 0 auto;">
+   <div class="form-group input-group-md">
+      <input type="text" class="form-control" placeholder="Title" name="postTitle" id="postTitle" ng-model="postModel.title">
+   </div>
+   <div class="form-group input-group-md">
+      <div class="post-editor" text-angular="" ng-model="postModel.content">{{post.content}}</text-angular>
+   </div>
+</form>

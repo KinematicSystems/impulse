@@ -1,0 +1,73 @@
+<div id="dashboard" ng-controller="DashboardController">
+   <div class="moduleHeading">Dashboard</div>
+   <div class="moduleContainer">
+      <div class="container-fluid">
+         <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
+               <div class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">
+                        <a ng-class="{'collapsed': invitationsCollapsed}"
+                           ng-click="invitationsCollapsed = !invitationsCollapsed" href="">Invitations</a>
+                     </h3>
+                  </div>
+                  <!-- Don't put collapse on panel body, transition is slow/stutters (mattg) -->
+                  <div collapse="invitationsCollapsed">
+                     <div enrollment-list enrollment-status="I"></div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
+               <div class="panel panel-default">
+                  <div class="panel-heading">
+                     <h4 class="panel-title">
+                        <a ng-class="{'collapsed': alertsCollapsed}" ng-click="alertsCollapsed = !alertsCollapsed"
+                           href="">Alerts</a>
+                     </h4>
+                  </div>
+                  <div collapse="alertsCollapsed">
+                     <div class="panel-body">
+                        <alert ng-repeat="testalert in alerts track by $index" type="{{testalert.type}}"
+                           close="closeAlert($index)">{{testalert.msg}}</alert>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
+               <div class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">
+                        <a ng-class="{'collapsed': stuffCollapsed}" ng-click="stuffCollapsed = !stuffCollapsed" href="">Stuff</a>
+                     </h3>
+                  </div>
+                  <!-- Don't put collapse on panel body, transition is slow/stutters (mattg) -->
+                  <div collapse="stuffCollapsed">
+                     <div class="panel-body">
+                        <span user-link userid="userId"></span>
+                        <br> Stuff 1<br>Stuff 2<br>Stuff 3<br>
+                        <span location-link latitude="40.7336" longitude="-74.1711">Prudential Center, Newark NJ</span>
+                        <br>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
+               <div class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">
+                        <a ng-class="{'collapsed': junkCollapsed}" ng-click="junkCollapsed = !junkCollapsed" href="">Junk</a>
+                     </h3>
+                  </div>
+                  <div collapse="junkCollapsed">
+                     <div class="panel-body">Jmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid
+                        single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer
+                        labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo.
+                        Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably
+                        haven't heard of them accusamus labore sustainable VHS.</div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>

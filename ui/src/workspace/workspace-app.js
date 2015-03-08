@@ -1,0 +1,102 @@
+angular.module(
+      'workspaceApp',
+      [ 'ui.bootstrap', 'ngAnimate', 'impulseFilters', 'workspaceDirectives', 'topbarModule', 'explorerModule', 'forumpostModule', 'settingsModule',
+            'forumManagerModule', 'loginModule', 'dashboardModule', 'mapModule', 'calendarModule', 'services.LoginService',
+            'services.ImpulseService', 'services.EventService' ]).config([ '$rootScopeProvider', function($rootScopeProvider) {
+} ])
+
+.run([ 'loginService', 'eventService', function(loginService, eventService) {
+   loginService.restoreSession();
+   var eventParams = {
+      debugMode: true,
+   };
+
+   eventService.init(eventParams);
+} ])
+
+.controller(
+      'WorkspaceController',
+      [ '$scope', '$rootScope', 'loginService', 'eventService', 'settingsService', 'impulseService', 'LOGIN_EVENTS','APP_EVENTS',
+            function($scope, $rootScope, loginService, eventService, settingsService, impulseService, LOGIN_EVENTS,APP_EVENTS) {
+
+               $scope.sidebarCollapsed = false;
+               $scope.forumExplorerVisible = false;
+               $scope.userId = impulseService.getCurrentUser();
+               $scope.currentPage = 'AllHidden';
+               $scope.isPolling = false;
+               $scope.isCollaborator = true;
+
+               function initForUser(userId)
+               {
+                  $scope.isCollaborator = impulseService.isCollaborator();
+                  $scope.currentPage = 'forumpost';
+                  $scope.forumExplorerVisible = true;
+                  eventService.connect($scope.userId);
+
+                  settingsService.getSetting($scope.userId, "workspace", "hideExplorerOnLogin").success(
+                        function(data, status) {
+                           $scope.forumExplorerVisible = (data === 'false');
+                        });
+
+                  settingsService.getSetting($scope.userId, "workspace", "collapseSidebarOnLogin").success(
+                        function(data, status) {
+                           $scope.sidebarCollapsed = (data === 'true');
+                        });
+               }
+               
+               if ($scope.userId)
+               {
+                  initForUser($scope.userId);
+               }
+               else
+               {
+                  $scope.currentPage = 'login';
+                  $scope.forumExplorerVisible = false;
+               }
+//DEBUG
+//               $scope.$watch('currentPage', function(value) {
+//                   console.log("currentPage="+value);  
+//               });
+               
+               $scope.$on(LOGIN_EVENTS.NOT_AUTHENTICATED, function(event, params) {
+                  $scope.currentPage = 'login';
+                  $scope.forumExplorerVisible = false;
+               });
+
+               $scope.$on(LOGIN_EVENTS.LOGIN_FAILED, function(event, params) {
+                  $scope.userId = "";
+                  $scope.forumExplorerVisible = false;
+               });
+
+               $scope.$on(LOGIN_EVENTS.LOGIN_SUCCESS, function(event, params) {
+                  $scope.userId = params.userId;
+                  initForUser($scope.userId);
+               });
+
+               $scope.$on(LOGIN_EVENTS.LOGOUT_SUCCESS, function(event, params) {
+                  $scope.currentPage = 'login';
+                  $scope.forumExplorerVisible = false;
+                  eventService.disconnect($scope.userId);
+                  $scope.userId = "";
+                  $scope.isPolling = false;
+               });
+
+               $scope.$on(APP_EVENTS.ACTIVATE_MODULE, function(event, moduleId) {
+                  $scope.currentPage = moduleId;
+               });
+               
+               $scope.$on('$destroy', function() {
+//                  alert("destroy");
+//                  loginService.logout();
+               });
+               
+               $scope.synchronize = function() {
+                  eventService.synchronize($scope.userId);
+               };
+
+               $scope.togglePolling = function() {
+                  $scope.isPolling = !$scope.isPolling;
+                  eventService.setPolling($scope.userId,$scope.isPolling);
+               };
+               
+            } ]);

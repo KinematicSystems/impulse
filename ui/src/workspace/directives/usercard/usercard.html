@@ -1,0 +1,12 @@
+<div class="panel panel-default active user-card">
+   <div class="item-header">
+      <span style="float: left; font-weight: bold;">{{userModel.firstName + ' ' + userModel.lastName}}</span>
+      <span style="float: right;">{{userModel.userId}}</span>
+   </div>
+   <div class="panel-body">
+     <a href="mailto:{{userModel.email}}" target="_blank">{{userModel.email}}</a>
+     <div style="color: #787878;">{{userModel.phone}}</div>
+     <div style="color: #787878;">{{userModel.organization}}</div>
+     <div  ng-transclude></div>
+   </div>
+</div>

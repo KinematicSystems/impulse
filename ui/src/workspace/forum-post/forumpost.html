@@ -1,0 +1,110 @@
+<div id="forumpost" ng-controller="ForumPostController">
+   <div class="moduleHeading">
+      {{headingText}}
+      <span class="controlbar">
+         <label ng-if="viewMode === 'O'" for="orderBox">order by:</label>
+         <select ng-if="viewMode === 'O'" id="orderBox" class="form-control" ng-model="orderBy">
+            <option value="forumName">Forum Name</option>
+            <option value="postingDate">Posting Date</option>
+         </select>
+         <input ng-if="viewMode !== 'E'" type="text" class="form-control" placeholder="Search">
+         <button ng-if="viewMode === 'P'" class="btn btn-xs btn-success" ng-click="newPost()">New Post</button>
+         <button ng-if="viewMode === 'P'" class="btn btn-xs btn-primary" ng-click="setViewMode('O')">Done</button>
+         <button ng-if="viewMode === 'E'" class="btn btn-xs btn-success" ng-click="savePost()">Save</button>
+         <button ng-if="viewMode === 'E'" class="btn btn-xs btn-primary" ng-click="setViewMode('P')">Done</button>
+      </span>
+   </div>
+   <div class="moduleContainer">
+      <div class="container-fluid">
+         <!-- ************* OVERVIEW MODE ************* -->
+         <div ng-if="viewMode === 'O'" class="row card-holder">
+            <div ng-repeat="forum in forumList track by $index" class="col-xs-12 col-sm-12 col-md-6 col-lg-4 card">
+               <div class="title">
+                  <div>
+                     <a href="" ng-click="showPosts(forum.id,forum.name)">{{forum.name}}</a>
+                     <span class="pull-right">
+                        <span ng-if="!(forum.isMember)">
+                           <a href="" title="Send Join Request" ng-click="joinRequest(forum.id)">
+                              <i class="fa fa-slideshare"></i>
+                           </a>
+                           <span>&nbsp;</span>
+                        </span>
+                        <span popover-trigger="mouseenter" popover="{{forum.description}}">
+                           <i class="fa fa-info-circle"></i>
+                        </span>
+                     </span>
+                  </div>
+                  <div ng-if="forum.numPosts > 0" class="post-stats pull-left">
+                     {{forum.numPosts}}
+                     <span ng-if="forum.numPosts == 1">post spanning</span>
+                     <span ng-if="forum.numPosts > 1">posts spanning</span>
+                     {{forum.numDays}}
+                     <span ng-if="forum.numDays == 1">day</span>
+                     <span ng-if="forum.numDays > 1">days</span>
+                  </div>
+                  <div class="card-byline pull-right">
+                     <span user-link userid="forum.owner"></span>
+                     on
+                     <span date-link date-value="forum.creationDate"></span>
+                  </div>
+               </div>
+               <div style="display: inline-block;" ng-if="forum.mostRecentPost">
+                  <div class="overview-title">
+                     <a class="post-title" ng-click="readPost(forum.id,forum.name,forum.mostRecentPost.id)">{{forum.mostRecentPost.title}}</a>
+                     <div class="card-byline">
+                        <span user-link userid="forum.mostRecentPost.userId"></span>
+                        on
+                        <span date-link date-value="forum.mostRecentPost.postDate"></span>
+                     </div>
+                  </div>
+                  <div class="forum-post" ng-bind-html="forum.mostRecentPost.content"></div>
+                  <a ng-if="forum.mostRecentPost.truncated" class="post-link pull-right" href=""
+                     ng-click="readPost(forum.id,forum.name,forum.mostRecentPost.id)"> Read Full Post</a>
+               </div>
+               <div ng-if="!forum.mostRecentPost">
+                  There are no posts in the forum.<br> <br>
+                  <a class="post-link pull-right" href="" ng-click="createFirstPost(forum.id,forum.name)">Create A
+                     New Post</a>
+                  <br>
+               </div>
+               <div class="card-footer" ng-repeat="otherPost in forum.otherPosts">
+                  <a class="post-title" href="" ng-click="readPost(forum.id,forum.name,otherPost.id)">{{otherPost.title}}</a>
+                  <div class="card-byline">
+                     <span user-link userid="otherPost.userId"></span>
+                     on
+                     <span date-link date-value="otherPost.postDate"></span>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <!-- ************* POST VIEW MODE ************* -->
+         <div ng-if="viewMode === 'P'" class="row">
+            <article class="col-md-12 post" ng-repeat="post in postList">
+               <header class="entry-header">
+                  <h1 class="entry-title">{{post.title}}</h1>
+                  <div class="entry-meta">
+                     <span class="entry-date">
+                        <span date-link date-value="post.postDate"></span>
+                     </span>
+                     <span class="byline">
+                        <span user-link userid="post.userId"></span>
+                     </span>
+                     <span class="edit-link">
+                        <a class="post-edit-link" href="" ng-click="editPost(post)">
+                           <span class="fa fa-pencil" title="Edit Posting"></span>
+                           Edit
+                        </a>
+                     </span>
+                  </div>
+               </header>
+               <div class="entry-content" ng-bind-html="post.content"></div>
+            </article>
+         </div>
+         <!-- ************* POST EDIT MODE ************* -->
+         <div ng-if="viewMode === 'E'" class="row">
+            <br>
+            <div post-edit post-model="post"></div>
+         </div>
+      </div>
+   </div>
+</div>

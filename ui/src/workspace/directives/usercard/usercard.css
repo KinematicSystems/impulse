@@ -1,0 +1,22 @@
+.user-card {
+   
+}
+
+.user-card .item-header {
+	height: 23px;
+   padding-left: 8px;
+   padding-right: 8px;
+   padding-top: 3px;
+   padding-bottom: 3px;
+   font-size: smaller;
+   border-bottom: 1px solid;
+   border-bottom-color: #DDD;
+   
+}
+
+.user-card .panel-body {
+   padding-left: 8px;
+   padding-right: 8px;
+   padding-top: 2px;
+   padding-bottom: 2px;
+}

@@ -1,0 +1,17 @@
+<div ng-controller="CalendarController">
+   <div class="moduleHeading">
+      Calendar:
+      <a target="_blank" href="http://mattlewis92.github.io/angular-bootstrap-calendar/">Click here to see component demo</a
+   </div>
+   <mwl-calendar style="overflow-y: auto;
+position: fixed;
+right: 10px;
+left: 170px;
+bottom: 0;
+top: 80px;"
+      calendar-events="events" calendar-view="calendarView" calendar-current-day="calendarDay"
+      calendar-control="calendarControl" calendar-event-click=""
+      calendar-edit-event-html="'<i class=\'glyphicon glyphicon-pencil\'></i>'"
+      calendar-delete-event-html="'<i class=\'glyphicon glyphicon-remove\'></i>'" calendar-edit-event-click=""
+      calendar-delete-event-click="" calendar-auto-open="true"></mwl-calendar>
+</div>
