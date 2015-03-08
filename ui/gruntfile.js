@@ -19,6 +19,13 @@ module.exports = function(grunt) {
             dest : 'build/<%= pkg.name %>.min.js'
          }
       },
+      release : {
+         copy : {
+            files : [ 
+              { src : 'dist', dest : '/src/www/htdocs/impulse-staging/'}
+            ]
+         }
+      },
       copy : {
          vendor : {
             files : [ 
@@ -26,6 +33,7 @@ module.exports = function(grunt) {
               { src : 'vendor/jquery/dist/jquery.min.map', dest : 'dist/'},
               { src : 'vendor/angular/angular.min.js', dest : 'dist/'},
               { src : 'vendor/angular/angular.min.js.map', dest : 'dist/'},
+              { src : 'vendor/less/dist/less.min.js', dest : 'dist/'},
               { src : 'vendor/angular-route/angular-route.min.js', dest : 'dist/'},
               { src : 'vendor/angular-route/angular-route.min.js.map', dest : 'dist/'},
               { src : 'vendor/angular-animate/angular-animate.min.js', dest : 'dist/'},
@@ -52,8 +60,17 @@ module.exports = function(grunt) {
               { src : 'vendor/leaflet/dist/images/*', dest : 'dist/'},
               { src : 'vendor/leaflet-plugins/layer/tile/Google.js', dest : 'dist/'},
               { src : 'vendor/angular-leaflet-directive/dist/angular-leaflet-directive.min.js', dest : 'dist/'},
+              { src : 'vendor/angular-inview/angular-inview.js', dest : 'dist/'},
+              { src : 'vendor/textAngular/dist/textAngular-rangy.min.js', dest : 'dist/'},
               { src : 'vendor/textAngular/dist/textAngular-sanitize.min.js', dest : 'dist/'},
-              { src : 'vendor/textAngular/dist/textAngular.min.js', dest : 'dist/'}
+              { src : 'vendor/textAngular/dist/textAngular.min.js', dest : 'dist/'},
+              { src : 'vendor/rangy/rangy-core.min.js', dest : 'dist/'},
+              { src : 'vendor/rangy/rangy-selectionsaverestore.min.js', dest : 'dist/'},
+              { src : 'vendor/moment/min/moment.min.js', dest : 'dist/'},
+              { src : 'vendor/angular-bootstrap-calendar/dist/css/angular-bootstrap-calendar.min.css', dest : 'dist/'},
+              { src : 'vendor/angular-bootstrap-calendar/dist/js/angular-bootstrap-calendar-tpls.min.js', dest : 'dist/'},
+              { src : 'vendor/angular-toastr/dist/angular-toastr.min.js', dest : 'dist/'},
+              { src : 'vendor/angular-toastr/dist/angular-toastr.min.css', dest : 'dist/'}
            ]
          },
          common : {
@@ -82,6 +99,7 @@ module.exports = function(grunt) {
             boss : true,
             eqnull : true,
             smarttabs : true,
+            laxbreak : true,
             globals : {}
          }
       }
