@@ -31,6 +31,10 @@ angular.module('adminApp', [ 'ui.bootstrap', 'ngRoute',
 			});
 
 		} ])
+		
+.run(['loginService', function(loginService) {
+    loginService.restoreSession();
+}])
 
 /**
  * HeaderController
@@ -41,14 +45,13 @@ angular.module('adminApp', [ 'ui.bootstrap', 'ngRoute',
  */
 .controller('HeaderController', [
 		'$scope',
-		'$timeout',
 		'$location',
 		'$route',
 		'loginService',
 		'LOGIN_EVENTS',
-		function($scope, $timeout, $location, $route, loginService,
+		function($scope, $location, $route, loginService,
 				LOGIN_EVENTS) {
-			$scope.loggedIn = false;
+			$scope.loggedIn = loginService.isLoggedIn();
 
 			$scope.$on(LOGIN_EVENTS.NOT_AUTHENTICATED, function(event, params) {
 				$scope.loggedIn = false;
@@ -77,15 +80,5 @@ angular.module('adminApp', [ 'ui.bootstrap', 'ngRoute',
 			$scope.logout = function() {
 				loginService.logout();
 			};
-
-			/*
-			 * TODO Need to find a way to do this after the controllers are
-			 * initialized Basically what is happening is the login service is
-			 * firing the loginSuccess method before the listeners are added in
-			 * the controllers in many but not all cases.
-			 */
-			$timeout(function() {
-				loginService.restoreSession();
-			}, 500);
 
 		} ]);

@@ -1,5 +1,5 @@
 angular.module('services.UserService',[]).factory('userService', ['$http', function($http) { 
-	var apiUrl = '/impulse/api/';
+	var apiUrl = '../api/';
 	var runGetRequest = function(method) { 	  
 		// Return the promise from the $http service 
 		// that calls the admin user API 
@@ -19,7 +19,11 @@ angular.module('services.UserService',[]).factory('userService', ['$http', funct
 			return runGetRequest('users/' + id);
 		}, 
 
-		createUser: function(user) {
+      getOnlineUsers: function() {
+         return runGetRequest('events/subscribers');
+      }, 
+
+      createUser: function(user) {
 			return $http({
 				method: 'POST',
 				data: user,

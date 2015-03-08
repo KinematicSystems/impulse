@@ -92,7 +92,7 @@
             <div class="col-sm-9">
                <input required ng-minlength="6" ng-model="user.password" name="pwd" type="password" class="form-control" />
                <div class="error" ng-show="userForm.pwd.$dirty && userForm.pwd.$invalid">
-                  <small class="error" ng-show="userForm.pwd.$error.required">Password name is required.</small>
+                  <small class="error" ng-show="userForm.pwd.$error.required">Password is required.</small>
                   <small class="error" ng-show="userForm.pwd.$error.minlength">Password must be at least 6
                      characters.</small>
                </div>
@@ -133,7 +133,7 @@
                      <!-- ng-true-value only works with strings so using ng-checked instead -->
                      <input type="checkbox" ng-model="user.sysuser" ng-click="sysUser = !sysUser"
                         ng-checked="user.sysuser == 1">
-                     Collaborator (Workspace User)
+                     Collaborator 
                   </label>
                </div>
             </div>

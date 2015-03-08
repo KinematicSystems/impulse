@@ -1,5 +1,5 @@
 angular.module('services.ForumAdminService',[]).factory('forumAdminService', ['$http', function($http) { 
-	var apiUrl = '/impulse/api/';
+	var apiUrl = '../api/';
 	var apiSection = 'forums';
 
 	var runGetRequest = function(method) { 	  

@@ -1,5 +1,5 @@
 angular.module('services.SettingsService',[]).factory('settingsService', ['$http', function($http) { 
-	var apiUrl = '/impulse/api/';
+	var apiUrl = '../api/';
 	var apiSection = 'settings';
 
 	var runGetRequest = function(method) { 	  

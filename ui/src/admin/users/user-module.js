@@ -12,6 +12,10 @@ userModule.controller('UserController', [
             $scope.userList = data;
          });
 
+         userService.getOnlineUsers().success(function(data, status) {
+            $scope.onlineList = data;
+         });
+         
          $scope.editUser = function(id) {
             for (var i = 0; i < $scope.userList.length; ++i)
             {
