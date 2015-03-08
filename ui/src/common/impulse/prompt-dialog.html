@@ -10,7 +10,7 @@
       <ng-form name="promptDialog" novalidate="" role="form" class="ng-pristine ng-invalid ng-invalid-required">
       <div class="form-group input-group-lg"
          ng-class="{true: 'has-error'}[promptDialog.promptValue.$dirty &amp;&amp; promptDialog.promptValue.$invalid]">
-         <label class="control-label" for="course">{{promptLabel}}</label>
+         <label class="control-label" for="promptValue">{{promptLabel}}</label>
          <input type="text" class="form-control ng-pristine ng-invalid ng-invalid-required" name="promptValue"
             id="promptValue" ng-model="promptValue" ng-keyup="hitEnter($event)" required="">
          <span class="help-block">{{promptMessage}}</span>
