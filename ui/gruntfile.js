@@ -20,7 +20,7 @@ module.exports = function(grunt) {
          }
       },
       copy : {
-         vendor : {
+         dist : {
             files : [ 
               { src : 'vendor/jquery/dist/jquery.min.js', dest : 'dist/'},
               { src : 'vendor/jquery/dist/jquery.min.map', dest : 'dist/'},
@@ -65,21 +65,19 @@ module.exports = function(grunt) {
               { src : 'vendor/angular-bootstrap-calendar/dist/js/angular-bootstrap-calendar-tpls.min.js', dest : 'dist/'},
               { src : 'vendor/angular-bootstrap-calendar/dist/js/angular-bootstrap-calendar-tpls.min.js.map', dest : 'dist/'},
               { src : 'vendor/angular-toastr/dist/angular-toastr.min.js', dest : 'dist/'},
-              { src : 'vendor/angular-toastr/dist/angular-toastr.min.css', dest : 'dist/'}
-           ]
-         },
-         common : {
-            expand: true, cwd: 'src/', src: 'common/**', dest : 'dist/'
-         },
-         admin : {
-            expand: true, cwd: 'src/', src: 'admin/**', dest : 'dist/'
-         },
-         workspace : {
-            expand: true, cwd: 'src/', src: 'workspace/**', dest : 'dist/'
+              { src : 'vendor/angular-toastr/dist/angular-toastr.min.css', dest : 'dist/'},
+              
+              // Full folders/subfolders
+              // common
+              { expand: true, cwd: 'src/', src: 'common/**', dest : 'dist/'},
+              // admin
+              { expand: true, cwd: 'src/', src: 'admin/**', dest : 'dist/'},
+              // workspace
+              { expand: true, cwd: 'src/', src: 'workspace/**', dest : 'dist/'},
+              // root
+              { src : 'src/index.html', dest : 'dist/index.html'}
+            ]
        },
-         main : {
-            src : 'src/index.html', dest : 'dist/index.html'
-        },
        release : {
            expand: true, cwd : 'dist/', src: '**', dest : '/src/www/htdocs/impulse-staging/'
         }
