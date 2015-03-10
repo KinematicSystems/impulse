@@ -119,6 +119,8 @@ class EventServicePDO
 
    public function getOnlineUsers()
    {
+      AppUtils::purgeExpiredSessions();
+      
       try
       {
          $pdo = getPDO();

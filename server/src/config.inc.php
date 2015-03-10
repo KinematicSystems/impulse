@@ -36,6 +36,7 @@ define('DB_USER', 'impulse');
 define('DB_PASSWORD', 'csptech');
 define('DB_HOST', '127.0.0.1');
 define('SESSION_HASH', 'iMpulSe321#@');
+define('SESSION_LIFETIME_SECONDS', 1200); // 20 minutes
 
 define('__ROOT__', dirname(dirname(__FILE__)));
 

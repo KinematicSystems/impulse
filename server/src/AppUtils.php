@@ -310,7 +310,7 @@ class AppUtils
       {
          // ZEBRA_SESSION
          $link = mysqliConnect();
-         self::$xactSession = new Zebra_Session($link, SESSION_HASH);
+         self::$xactSession = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
          //AppUtils::logDebug("Session Created: setLoginValid() with id " . session_id());
          
          $_SESSION['userValid'] = 1;
@@ -344,7 +344,7 @@ class AppUtils
          else
          {
             $link = mysqliConnect();
-            $session = new Zebra_Session($link, SESSION_HASH);
+            $session = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
          }   
          
          if (isset($_SESSION['userId']))
@@ -386,7 +386,7 @@ class AppUtils
          else
          {
             $link = mysqliConnect();
-            $session = new Zebra_Session($link, SESSION_HASH);
+            $session = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
          }
 
          if (isset($_SESSION['userValid']) && $_SESSION['userValid'])
@@ -426,7 +426,7 @@ class AppUtils
          else
          {
             $link = mysqliConnect();
-            $session = new Zebra_Session($link, SESSION_HASH);
+            $session = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
          }
           
          
@@ -471,9 +471,30 @@ class AppUtils
           * variables session_destroy();
           */
          $link = mysqliConnect();
-         $session = new Zebra_Session($link, SESSION_HASH);
+         $session = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
          $session->stop();
          self::$xactSession = NULL;
       }
    }
+   
+   /**
+    * purge any sessions left around by users who had no activity
+    * and did not log out.
+    */
+   public static function purgeExpiredSessions()
+   {
+      try
+      {
+         $pdo = getPDO();
+         $sql = "DELETE FROM session_data WHERE UNIX_TIMESTAMP() > session_expire";
+         $stmt = $pdo->prepare($sql);
+          $stmt->execute();
+      }
+      catch (Exception $e)
+      {
+         throw $e;
+      }
+      
+   }
+    
 }
