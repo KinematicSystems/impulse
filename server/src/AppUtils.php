@@ -47,11 +47,12 @@ class AppUtils
    const DB_ERROR_CODE = 99;
    private static $testMode = false;
    private static $stompMode = false;
-   private static $testUserId = null;
+   private static $testUserId = NULL;
    private static $testSessionId = "test-id-123";
    private static $messageTopic = '/topic/chat.general';
    private static $topic = '/topic/';
-
+   private static $xactSession = NULL; // Reuse session within transaction
+    
    /**
     * Send an http response with content encoded as JSON
     *
@@ -307,33 +308,16 @@ class AppUtils
       }
       else
       {
-         /*
-          * Test code trying to get session files to clean up:
-          */
-         // session_cache_limiter('public');
-         // ini_set('session.gc_maxlifetime', 60);
-         // session_cache_expire(1);
-         
-         /*
-          * NO_ZEBRA_SESSION session_start(); session_regenerate_id(); // this
-          * is a security measure // Note: regenerate_id is what leaves an //
-          * orphaned session file with zero length // after logout.
-          */
-         // $lifetime=60;
-         // setcookie(session_name(),session_id(),time()+$lifetime);
-         
-         // SessionManager::sessionStart("impulse", 0, '/', 'localhost:8888',
-         // true);
-         
          // ZEBRA_SESSION
          $link = mysqliConnect();
-         $session = new Zebra_Session($link, SESSION_HASH);
+         self::$xactSession = new Zebra_Session($link, SESSION_HASH);
          //AppUtils::logDebug("Session Created: setLoginValid() with id " . session_id());
          
          $_SESSION['userValid'] = 1;
          $_SESSION['userId'] = $userId;
          $_SESSION['userAccessLevel'] = $accessLevel;
          $_SESSION['userAgent'] = md5($_SERVER['HTTP_USER_AGENT']);
+         //AppUtils::logDebug("Session assigned setLoginValid() with id " . session_id());
       }
    }
 
@@ -350,22 +334,31 @@ class AppUtils
       }
       else
       {
+         $session = NULL;
+          
          // ZEBRA_SESSION
-         $link = mysqliConnect();
-         $session = new Zebra_Session($link, SESSION_HASH);
-         //AppUtils::logDebug("Session Created: getUserId() with id " . session_id());
+         if (isset(self::$xactSession))
+         {   
+            $session = self::$xactSession;
+         }
+         else
+         {
+            $link = mysqliConnect();
+            $session = new Zebra_Session($link, SESSION_HASH);
+         }   
          
          if (isset($_SESSION['userId']))
          {
             //AppUtils::logDebug("Session: getUserId() with id " . $_SESSION['userId']);
+            self::$xactSession = $session;
             return $_SESSION['userId'];
          }
          else
          {
-            //AppUtils::logDebug("Session: getUserId() returning null");
+            //AppUtils::logDebug("Session: getUserId() returning NULL");
             // Remove the invalid session from database
             $session->stop();
-            return null;
+            return NULL;
          }
       }
    }
@@ -383,10 +376,22 @@ class AppUtils
       }
       else
       {
-         $link = mysqliConnect();
-         $session = new Zebra_Session($link, SESSION_HASH);
+         $session = NULL;
+          
+         // ZEBRA_SESSION
+         if (isset(self::$xactSession))
+         {
+            $session = self::$xactSession;
+         }
+         else
+         {
+            $link = mysqliConnect();
+            $session = new Zebra_Session($link, SESSION_HASH);
+         }
+
          if (isset($_SESSION['userValid']) && $_SESSION['userValid'])
          {   
+            self::$xactSession = $session;
             return session_id();
          }
          else 
@@ -411,15 +416,19 @@ class AppUtils
       }
       else
       {
-         // SessionManager::sessionStart("impulse", 0, '/', 'localhost', true);
-         /*
-          * NO_ZEBRA_SESSION session_start();
-          */
          // ZEBRA_SESSION
-         $link = mysqliConnect();
-         $session = new Zebra_Session($link, SESSION_HASH);
-//          AppUtils::logDebug(
-//             "Session Created: isLoggedIn() with id " . session_id());
+         $session = NULL;
+          
+         if (isset(self::$xactSession))
+         {
+            $session = self::$xactSession;
+         }
+         else
+         {
+            $link = mysqliConnect();
+            $session = new Zebra_Session($link, SESSION_HASH);
+         }
+          
          
          if (isset($_SESSION['userValid']) && $_SESSION['userValid'] &&
              isset($_SESSION['userAgent']) &&
@@ -427,6 +436,7 @@ class AppUtils
          {
 //             AppUtils::logDebug(
 //                "Session isLoggedIn() with validity  " . $_SESSION['userValid']);
+            self::$xactSession = $session;
             return true;
          }
          else
@@ -463,6 +473,7 @@ class AppUtils
          $link = mysqliConnect();
          $session = new Zebra_Session($link, SESSION_HASH);
          $session->stop();
+         self::$xactSession = NULL;
       }
    }
 }
