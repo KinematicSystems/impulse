@@ -116,7 +116,10 @@ function($document, impulseService, forumService, LOGIN_EVENTS, COLLAB_EVENTS, E
          });
 
          // Init
-         updateList();
+         if (impulseService.getCurrentUser())
+         {   
+            updateList();
+         }
       },
       templateUrl: 'directives/enrollmentlist/enrollmentlist.html',
       //templateUrl: 'templates/enrollmentlist/enrollmentlist.html',
