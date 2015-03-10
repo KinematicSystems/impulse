@@ -48,9 +48,9 @@ class AppUtils
    private static $testMode = false;
    private static $stompMode = false;
    private static $testUserId = null;
+   private static $testSessionId = "test-id-123";
    private static $messageTopic = '/topic/chat.general';
    private static $topic = '/topic/';
-   private static $session = null;
 
    /**
     * Send an http response with content encoded as JSON
@@ -326,11 +326,9 @@ class AppUtils
          // true);
          
          // ZEBRA_SESSION
-         if (!isset(self::$session))
-         {
-            $link = mysqliConnect();
-            self::$session = new Zebra_Session($link, SESSION_HASH);
-         }
+         $link = mysqliConnect();
+         $session = new Zebra_Session($link, SESSION_HASH);
+         //AppUtils::logDebug("Session Created: setLoginValid() with id " . session_id());
          
          $_SESSION['userValid'] = 1;
          $_SESSION['userId'] = $userId;
@@ -353,16 +351,50 @@ class AppUtils
       else
       {
          // ZEBRA_SESSION
-         if (!isset(self::$session))
-         {
-            $link = mysqliConnect();
-            self::$session = new Zebra_Session($link, SESSION_HASH);
-         }
+         $link = mysqliConnect();
+         $session = new Zebra_Session($link, SESSION_HASH);
+         //AppUtils::logDebug("Session Created: getUserId() with id " . session_id());
          
          if (isset($_SESSION['userId']))
+         {
+            //AppUtils::logDebug("Session: getUserId() with id " . $_SESSION['userId']);
             return $_SESSION['userId'];
+         }
          else
+         {
+            //AppUtils::logDebug("Session: getUserId() returning null");
+            // Remove the invalid session from database
+            $session->stop();
             return null;
+         }
+      }
+   }
+
+   /**
+    * Get session ID
+    *
+    * @return string Session ID
+    */
+   public static function getSessionId()
+   {
+      if (self::$testMode)
+      {
+         return self::$testSessionId;
+      }
+      else
+      {
+         $link = mysqliConnect();
+         $session = new Zebra_Session($link, SESSION_HASH);
+         if (isset($_SESSION['userValid']) && $_SESSION['userValid'])
+         {   
+            return session_id();
+         }
+         else 
+         {
+            // remove this invalid session
+            $session->stop();
+            return 'NO-SESSION-ID';            
+         }   
       }
    }
 
@@ -384,20 +416,24 @@ class AppUtils
           * NO_ZEBRA_SESSION session_start();
           */
          // ZEBRA_SESSION
-         if (!isset(self::$session))
-         {
-            $link = mysqliConnect();
-            self::$session = new Zebra_Session($link, SESSION_HASH);
-         }
+         $link = mysqliConnect();
+         $session = new Zebra_Session($link, SESSION_HASH);
+//          AppUtils::logDebug(
+//             "Session Created: isLoggedIn() with id " . session_id());
          
          if (isset($_SESSION['userValid']) && $_SESSION['userValid'] &&
              isset($_SESSION['userAgent']) &&
              ($_SESSION['userAgent'] == md5($_SERVER['HTTP_USER_AGENT'])))
          {
+//             AppUtils::logDebug(
+//                "Session isLoggedIn() with validity  " . $_SESSION['userValid']);
             return true;
          }
          else
          {
+//            AppUtils::logDebug("Session isLoggedIn() retuning false");
+            // remove this invalid session
+            $session->stop();
             return false;
          }
       }
@@ -410,27 +446,23 @@ class AppUtils
    {
       if (!self::$testMode)
       {
-         $userId = self::getUserId();
-         if (isset($userId))
-         {
-            // Unsubscribe from all events
-            $pdo = new EventServicePDO();
-            $pdo->unsubscribeForUser($userId);
-         }
+         // This is handled by cascading delete in database schema
+         // This way if the GC deletes the session the event subscriptions will be cleaned up
+         // $userId = self::getUserId();
+         // if (isset($userId))
+         // {
+         // // Unsubscribe from all events
+         // $pdo = new EventServicePDO();
+         // $pdo->unsubscribeForUser($userId);
+         // }
          
          /*
           * NO_ZEBRA_SESSION $_SESSION = array(); // destroy all of the session
           * variables session_destroy();
           */
-         // ZEBRA_SESSION
-         if (!isset(self::$session))
-         {
-            $link = mysqliConnect();
-            self::$session = new Zebra_Session($link, SESSION_HASH);
-         }
-         
-         self::$session->stop();
-         self::$session = null;
+         $link = mysqliConnect();
+         $session = new Zebra_Session($link, SESSION_HASH);
+         $session->stop();
       }
    }
 }

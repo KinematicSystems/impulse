@@ -60,21 +60,19 @@ class SessionAuth extends \Slim\Middleware
    public function call()
    {
       $reqURI = $this->app->request()->getResourceUri();
-      if (AppUtils::isLoggedIn())
+      if ($reqURI == '/login' || $reqURI == '/logout') // Allow the call to
+                                                       // login to pass through
       {
          $this->next->call();
       }
-      else
+      else if (AppUtils::isLoggedIn())
       {
-         if ($reqURI == '/login') // Allow the call to login to pass through
-         {
-            $this->next->call();
-         }
-         else // Unauthorized access
-         {
-            $res = $this->app->response();
-            $res->status(401);
-         }
+         $this->next->call();
+      }
+      else // Unauthorized access
+      {
+         $res = $this->app->response();
+         $res->status(401);
       }
    }
 }

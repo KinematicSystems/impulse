@@ -54,16 +54,15 @@ class EventServicePDO
 
    public function subscribe($userId, $topic)
    {
-      // Set the session id so that if the session times out and the record is removed from 
+      // Setting the session id so that if the session times out and the record is removed from 
       // the session_data table the deletion can cascade to event descriptions 
-      $sessionId = session_id(); 
-      
+     
       try
       {
          $sub = array(
             "userId" => $userId,
             "topic" => $topic,
-            "session_id" => $sessionId
+            "session_id" => AppUtils::getSessionId()
          );
          
          $this->db->event_subscriptions()->insert($sub);
