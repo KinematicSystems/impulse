@@ -9,7 +9,7 @@
       <!-- Forum Selector -->
       <div class="toolRow btn-group">
          <div class="btn-group" dropdown style="width: 143px; height: 30px;" title="Current Forum">
-            <button type="button" ng-disabled="editMode" class="btn btn-default btn-sm dropdown-toggle"
+            <button type="button" dropdown-toggle ng-disabled="editMode" class="btn btn-default btn-sm dropdown-toggle"
                style="width: 100%; height: 30px; text-align: left;">
                <span style="font-weight: bold; padding-right: 5px;">{{selectedForum.name}}</span>
                <span class="caret"></span>
@@ -22,7 +22,7 @@
          </div>
          <!-- Path Jump -->
          <div class="btn-group pull-right" dropdown title="Jump to Folder">
-            <button type="button" ng-disabled="editMode || userMode" class="btn btn-default btn-sm dropdown-toggle">
+            <button type="button" dropdown-toggle ng-disabled="editMode || userMode" class="btn btn-default btn-sm dropdown-toggle">
                <span class="glyphicon glyphicon-folder-open"></span>
                &nbsp;
                <span class="caret"></span>
