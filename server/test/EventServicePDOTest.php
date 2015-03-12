@@ -31,10 +31,12 @@
  */
 require_once ('../src/config.inc.php');
 require_once (__ROOT__ . '/src/vendor/NotORM.php');
+require_once (__ROOT__ . '/src/vendor/Zebra_Session/Zebra_Session.php');
 require_once (__ROOT__ . '/src/dbconn.php');
 require_once (__ROOT__ . '/src/AppUtils.php');
 require_once (__ROOT__ . '/src/services/EventServicePDO.php');
 
+// TODO can't really test this from the command line due to session issues 
 /**
  * EventService test case.
  */
@@ -42,6 +44,7 @@ class EventServicePDOTest extends PHPUnit_Framework_TestCase
 {
    private $pdo;
    const USER_ID = 'testguy';
+   private $session = null;
     
    /**
     * Prepares the environment before running a test.
@@ -50,6 +53,9 @@ class EventServicePDOTest extends PHPUnit_Framework_TestCase
    {
       parent::setUp();
       $this->pdo = new EventServicePDO();
+      $link = mysqliConnect();
+      $this->session = new Zebra_Session($link,'XXXX');
+      $_SESSION['userValid'] = 1;
    }
 
    /**
@@ -58,6 +64,8 @@ class EventServicePDOTest extends PHPUnit_Framework_TestCase
    protected function tearDown()
    {
       parent::tearDown();
+      if ($this->session)
+         $this->session->stop();
    }
 
    /**

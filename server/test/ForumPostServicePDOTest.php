@@ -38,29 +38,30 @@ require_once (__ROOT__ . '/src/services/ForumServicePDO.php');
 require_once (__ROOT__ . '/src/services/ForumPostServicePDO.php');
 
 /**
- * ForumService test case. This is dependent on the ForumServicePDO passing tests
+ * ForumService test case.
+ * This is dependent on the ForumServicePDO passing tests
  */
 class ForumServicePDOTest extends PHPUnit_Framework_TestCase
 {
-   private $forumPDO;
-   private $postPDO;
-   private $userPDO;
-   private $forumId;
-   
+   private static $forumPDO;
+   private static $postPDO;
+   private static $userPDO;
+   private static $forumId;
    const USER_ID = 'forumTestGuy';
-   
+   const POST_COUNT = 10;
+
    /**
     * Prepares the environment before running a test.
     */
-   protected function setUp()
+   public static function setUpBeforeClass()
    {
-      parent::setUp();
-      $this->forumPDO = new ForumServicePDO();
-      $this->postPDO = new ForumPostServicePDO();
-      $this->userPDO = new UserServicePDO();
+      // fwrite(STDOUT, __METHOD__ . "\n");
+      self::$forumPDO = new ForumServicePDO();
+      self::$postPDO = new ForumPostServicePDO();
+      self::$userPDO = new UserServicePDO();
       
       AppUtils::setTestMode(true);
-      AppUtils::setLoginValid(SELF::USER_ID,"sysuser");
+      AppUtils::setLoginValid(SELF::USER_ID, "sysuser");
       
       // Create a user for forum testing
       // Not sure how else to do this
@@ -76,108 +77,141 @@ class ForumServicePDOTest extends PHPUnit_Framework_TestCase
       );
       
       // Create Users for forum test
-      $retUser = $this->userPDO->create($newUser);
+      $retUser = self::$userPDO->create($newUser);
       PHPUnit_Framework_Assert::assertEquals($retUser['id'], SELF::USER_ID);
-
+      
       // Create a Forum
-      $this->forumId = $this->forumPDO->createForum('TestForum.1', 
+      self::$forumId = self::$forumPDO->createForum('TestForum.1', 
          'TestForum.1 Description', SELF::USER_ID);
-      PHPUnit_Framework_Assert::assertNotNull($this->forumId);
+      PHPUnit_Framework_Assert::assertNotNull(self::$forumId);
    }
 
    /**
     * Cleans up the environment after running a test.
     */
-   protected function tearDown()
+   public static function tearDownAfterClass()
    {
-      parent::tearDown();
+      // fwrite(STDOUT, __METHOD__ . "\n");
       
       // Delete User for forum test
-      $this->userPDO->delete(SELF::USER_ID);
-      $retUser = $this->userPDO->get(SELF::USER_ID);
+      self::$userPDO->delete(SELF::USER_ID);
+      $retUser = self::$userPDO->get(SELF::USER_ID);
       PHPUnit_Framework_Assert::assertNull($retUser);
-
+      
       // Delete Test Forum
-      $this->forumPDO->deleteForum($this->forumId);
-      $testForum = $this->forumPDO->getForum($this->forumId);
+      self::$forumPDO->deleteForum(self::$forumId);
+      $testForum = self::$forumPDO->getForum(self::$forumId);
       PHPUnit_Framework_Assert::assertNull($testForum);
    }
 
-   /**
-    * One Test because it needs to run in order
-    */
-   public function testAll()
+   public function testCreatePost()
    {
-      PHPUnit_Framework_Assert::assertNotNull($this->postPDO);
+      //fwrite(STDOUT, __METHOD__ . "\n");
+      PHPUnit_Framework_Assert::assertNotNull(self::$postPDO);
       
-      // *
-      // * Forum CRUD Tests
-      // *
-      
-      
-      // *
-      // * Forum Post Tests
-      // *
       $newPostItem = array(
          'id' => null, // Set by service
-         'forumId' => $this->forumId,
+         'forumId' => self::$forumId,
          'userId' => SELF::USER_ID,
-         //'postDate' => null, // Set by service
+         // 'postDate' => null, // Set by service
          'title' => 'TestPost.0',
          'content' => 'This is a test post item.0',
          'contentType' => 'text/plain'
       );
       
-      $forumPostItemId = $this->postPDO->createForumPostEntry($newPostItem);
+      $forumPostItemId = self::$postPDO->createForumPostEntry($newPostItem);
       PHPUnit_Framework_Assert::assertNotNull($forumPostItemId);
       PHPUnit_Framework_Assert::assertGreaterThanOrEqual(0, $forumPostItemId);
-      
-      $forumPost = $this->postPDO->getForumPost($this->forumId);
-      PHPUnit_Framework_Assert::assertEquals(1, count($forumPost));
-
-      // Update the postItem
       $newPostItem['id'] = $forumPostItemId;
+      return $newPostItem;
+   }
+
+   /**
+    * @depends testCreatePost
+    */
+   public function testGetPost(array $newPostItem)
+   {
+      $forumPostItemId = $newPostItem['id'];
+      $forumPost = self::$postPDO->getForumPost(self::$forumId);
+      self::assertEquals(1, count($forumPost));
+   }
+
+   /**
+    * @depends testCreatePost
+    */
+   public function testUpdatePost(array $newPostItem)
+   {
+      // Update the postItem
       $newPostItem['title'] = 'TestPost.0.A';
-      $result = $this->postPDO->updateForumPostEntry($forumPostItemId,$newPostItem);
-      PHPUnit_Framework_Assert::assertEquals($result['title'],'TestPost.0.A');
-      $result = $this->postPDO->getPosting($this->forumId,$forumPostItemId);
-      PHPUnit_Framework_Assert::assertEquals($result['title'],'TestPost.0.A');
-      
+      $result = self::$postPDO->updateForumPostEntry($newPostItem['id'], 
+         $newPostItem);
+      PHPUnit_Framework_Assert::assertEquals($result['title'], 'TestPost.0.A');
+      $result = self::$postPDO->getPosting(self::$forumId, $newPostItem['id']);
+      PHPUnit_Framework_Assert::assertEquals($result['title'], 'TestPost.0.A');
+   }
+
+   /**
+    * @depends testCreatePost
+    */
+   public function testMultiplePosts(array $newPostItem)
+   {
+      //fwrite(STDOUT, __METHOD__ . "\n");
       // Add more post items for purge test
-      $postCount = 10;
       $newPostItem['id'] = null;
-      for ($i = 1; $i < $postCount; $i++)
+      for ($i = 1; $i < SELF::POST_COUNT; $i ++)
       {
          $newPostItem['title'] = 'TestPost.' . $i;
          $newPostItem['content'] = 'This is a test post item.' . $i;
          // force the postDate for testing purposes
-         $newPostItem['postDate'] = '2020-02-0'.$i.' 11:12:13';
-         $this->postPDO->createForumPostEntry($newPostItem);
+         $newPostItem['postDate'] = '2020-02-0' . $i . ' 11:12:13';
+         self::$postPDO->createForumPostEntry($newPostItem);
       }
-      $forumPost = $this->postPDO->getForumPost($this->forumId);
-      PHPUnit_Framework_Assert::assertEquals($postCount, count($forumPost));
+      $forumPosts = self::$postPDO->getForumPost(self::$forumId);
+      PHPUnit_Framework_Assert::assertEquals(SELF::POST_COUNT, count($forumPosts));
+   }
 
-      $forumPost = $this->postPDO->getPostSummary($this->forumId);
-      PHPUnit_Framework_Assert::assertEquals($forumPost['mostRecentPost']['title'], 'TestPost.9');
-//      AppUtils::logDebug($forumPost['mostRecentPost']);
+   /**
+    * @depends testMultiplePosts
+    */
+   public function testPostSummary()
+   {
+      $forumPost = self::$postPDO->getPostSummary(self::$forumId);
+      PHPUnit_Framework_Assert::assertEquals(
+         $forumPost['mostRecentPost']['title'], 'TestPost.9');
+      // AppUtils::logDebug($forumPost['mostRecentPost']);
+   }
 
-      $forumPost = $this->postPDO->getPostOverviews(SELF::USER_ID);
+   /**
+    * @depends testMultiplePosts
+    */
+   public function testPostOverviews()
+   {
+      // AppUtils::logDebug($forumPost['mostRecentPost']);
+      $forumPost = self::$postPDO->getPostOverviews(SELF::USER_ID);
       $testForumIndex = 0;
       foreach ($forumPost as $theForum)
-      {  
-         if ($theForum['id'] == $this->forumId)
+      {
+         if ($theForum['id'] == self::$forumId)
             break;
-             
-         ++$testForumIndex;
+         
+         $testForumIndex ++;
       }
-       
-//      AppUtils::logDebug("testForumIndex:".$testForumIndex);
-      PHPUnit_Framework_Assert::assertEquals('TestPost.9',$forumPost[$testForumIndex]['mostRecentPost']['title']);
-      PHPUnit_Framework_Assert::assertEquals($postCount-1, count($forumPost[$testForumIndex]['otherPosts']));
       
-      // Purge the post
-      $this->postPDO->purgeForumPost($this->forumId);
-      $forumPost = $this->postPDO->getForumPost($this->forumId);
+      // AppUtils::logDebug("testForumIndex:".$testForumIndex);
+      PHPUnit_Framework_Assert::assertEquals('TestPost.9', 
+         $forumPost[$testForumIndex]['mostRecentPost']['title']);
+      PHPUnit_Framework_Assert::assertEquals(SELF::POST_COUNT - 1, 
+         count($forumPost[$testForumIndex]['otherPosts']));
+   }
+
+   /**
+    * @depends testPostOverviews
+    */
+   public function testPurgePosts()
+   {
+      // Purge the posts
+      self::$postPDO->purgeForumPost(self::$forumId);
+      $forumPost = self::$postPDO->getForumPost(self::$forumId);
       PHPUnit_Framework_Assert::assertEquals(0, count($forumPost));
    }
 }

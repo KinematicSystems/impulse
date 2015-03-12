@@ -40,34 +40,29 @@ require_once (__ROOT__ . '/src/services/UserServicePDO.php');
  */
 class UserServicePDOTest extends PHPUnit_Framework_TestCase
 {
-   private $pdo;
+   private static $pdo;
    const USER_ID = 'testguy';
    const SETTINGS_DOMAIN = 'TestSettings';
-    
+
    /**
     * Prepares the environment before running a test.
     */
-   protected function setUp()
+   public static function setUpBeforeClass()
    {
-      parent::setUp();
-      $this->pdo = new UserServicePDO();
-      $this->pdo->delete(self::USER_ID);
+      self::$pdo = new UserServicePDO();
    }
 
    /**
     * Cleans up the environment after running a test.
     */
-   protected function tearDown()
+   public static function tearDownAfterClass()
    {
-      parent::tearDown();
+      
    }
 
-   /**
-    * One Test because it needs to run in order
-    */
-   public function testAll()
+   public function testCreateUser()
    {
-      PHPUnit_Framework_Assert::assertNotNull($this->pdo);
+      PHPUnit_Framework_Assert::assertNotNull(self::$pdo);
       
       $newUser = array(
          'id' => self::USER_ID,
@@ -81,112 +76,173 @@ class UserServicePDOTest extends PHPUnit_Framework_TestCase
       );
       
       // Create Test
-      $retUser = $this->pdo->create($newUser);
+      $retUser = self::$pdo->create($newUser);
       PHPUnit_Framework_Assert::assertEquals($retUser['id'], self::USER_ID);
       
-      // Get Test
-      $retUser = $this->pdo->get(self::USER_ID);
-      PHPUnit_Framework_Assert::assertEquals($newUser['id'], $retUser['id']);
-      // error_log('Password: '.$retUser['password']);
-      
-      // Validate Password Test
-      $validated = $this->pdo->validateUser(self::USER_ID, 'testguy1234!@#$');
-      PHPUnit_Framework_Assert::assertTrue($validated);
-      $validated = $this->pdo->validateUser(self::USER_ID, 'testguy1234');
-      PHPUnit_Framework_Assert::assertNotTrue($validated);
-      
-      // Update Test
-      $newUser['organization'] = 'updatedTestOrg';
-      $newUser['password'] = 'changedPassword';
-      $this->pdo->update(self::USER_ID, $newUser);
-      $retUser = $this->pdo->get(self::USER_ID);
-      PHPUnit_Framework_Assert::assertEquals('updatedTestOrg', 
-         $retUser['organization']);
-      // Validate Updated Password Test
-      $validated = $this->pdo->validateUser(self::USER_ID, 'changedPassword');
-      PHPUnit_Framework_Assert::assertTrue($validated);
-      $validated = $this->pdo->validateUser(self::USER_ID, 'testguy1234');
-      PHPUnit_Framework_Assert::assertNotTrue($validated);
-      // Validate Update with no password parameter in user 
-      unset($newUser['password']);
-      $newUser['organization'] = 'testOrganization';
-      $this->pdo->update(self::USER_ID, $newUser);
-      $retUser = $this->pdo->get(self::USER_ID);
-      PHPUnit_Framework_Assert::assertEquals('testOrganization', 
-         $retUser['organization']);
-      $validated = $this->pdo->validateUser(self::USER_ID, 'changedPassword');
-      PHPUnit_Framework_Assert::assertTrue($validated);
-      
-      // All users
-      $allUsers = $this->pdo->getAll();
+      return $retUser['id'];
+   }
+
+   /**
+    * @depends testCreateUser
+    */
+   public function testGetUser($userId)
+   {
+      $retUser = self::$pdo->get(self::USER_ID);
+      PHPUnit_Framework_Assert::assertNotNull($retUser);
+      PHPUnit_Framework_Assert::assertEquals($retUser['id'], $userId);
+      return $retUser;
+   }
+
+   /**
+    * @depends testCreateUser
+    */
+   public function testGetAllUsers()
+   {
+      $allUsers = self::$pdo->getAll();
       // fwrite(STDERR, print_r('Number of users: '.count($allUsers)."\n",
       // TRUE));
       PHPUnit_Framework_Assert::assertGreaterThan(1, count($allUsers));
       PHPUnit_Framework_Assert::assertNotNull($allUsers[0]['id']);
       // fwrite(STDERR, print_r('User id: '.$allUsers[0]['id'], TRUE));
+   }
+
+   /**
+    * @depends testGetUser
+    */
+   public function testValidatePassword($user)
+   {
+      // Validate Password Test
+      $validated = self::$pdo->validateUser($user['id'], 'testguy1234!@#$');
+      PHPUnit_Framework_Assert::assertTrue($validated);
+      $validated = self::$pdo->validateUser($user['id'], 'testguy1234');
+      PHPUnit_Framework_Assert::assertNotTrue($validated);
+   }
+
+   /**
+    * @depends testGetUser
+    */
+   public function testUpdateUser($user)
+   {
+      $newUser = array(
+         'id' => $user['id'],
+         'firstName' => 'testguyFirstName',
+         'lastName' => 'testguyLastName',
+         'organization' => 'updatedTestOrg',
+         'email' => 'testguy@email.com',
+         'password' => 'changedPassword',
+         'sysuser' => 1,
+         'enabled' => 1
+      );
       
-      // Delete Test
-      $this->pdo->delete(self::USER_ID);
-      $retUser = $this->pdo->get(self::USER_ID);
-      PHPUnit_Framework_Assert::assertNull($retUser);
-      
+      self::$pdo->update(self::USER_ID, $newUser);
+      $retUser = self::$pdo->get(self::USER_ID);
+      PHPUnit_Framework_Assert::assertEquals('updatedTestOrg', 
+         $retUser['organization']);
+      // Validate Updated Password Test
+      $validated = self::$pdo->validateUser(self::USER_ID, 'changedPassword');
+      PHPUnit_Framework_Assert::assertTrue($validated);
+      $validated = self::$pdo->validateUser(self::USER_ID, 'testguy1234');
+      PHPUnit_Framework_Assert::assertNotTrue($validated);
+      // Validate Update with no password parameter in user
+      unset($newUser['password']);
+      $newUser['organization'] = 'testOrganization';
+      self::$pdo->update(self::USER_ID, $newUser);
+      $retUser = self::$pdo->get(self::USER_ID);
+      PHPUnit_Framework_Assert::assertEquals('testOrganization', 
+         $retUser['organization']);
+      $validated = self::$pdo->validateUser(self::USER_ID, 'changedPassword');
+      PHPUnit_Framework_Assert::assertTrue($validated);
+   }
+
+   /**
+    * @depends testCreateUser
+    */
+   public function testUserProperties($userId)
+   {
       // Uses Test Properties from db/test-data.sql
       // These are normally populated as part of system integration
-      
       // Property Assignment Tests
-      $props = $this->pdo->getAllProperties();
+      $props = self::$pdo->getAllProperties();
       PHPUnit_Framework_Assert::assertGreaterThan(12, count($props));
       
-      $props = $this->pdo->getUserProperties(self::USER_ID);
+      $props = self::$pdo->getUserProperties(self::USER_ID);
       PHPUnit_Framework_Assert::assertEquals(0, count($props));
       
-      $this->pdo->assignUserProperty(self::USER_ID, 'TestProp.3');
-      $props = $this->pdo->getUserProperties(self::USER_ID);
+      self::$pdo->assignUserProperty(self::USER_ID, 'TestProp.3');
+      $props = self::$pdo->getUserProperties(self::USER_ID);
       PHPUnit_Framework_Assert::assertEquals(1, count($props));
       
-      $this->pdo->revokeUserProperty(self::USER_ID, 'TestProp.3');
-      $props = $this->pdo->getUserProperties(self::USER_ID);
+      self::$pdo->revokeUserProperty(self::USER_ID, 'TestProp.3');
+      $props = self::$pdo->getUserProperties(self::USER_ID);
       PHPUnit_Framework_Assert::assertEquals(0, count($props));
       
-      $this->pdo->assignUserProperty(self::USER_ID, 'TestProp.1');
-      $this->pdo->assignUserProperty(self::USER_ID, 'TestProp.2');
-      $this->pdo->assignUserProperty(self::USER_ID, 'TestProp.3');
-      $this->pdo->assignUserProperty(self::USER_ID, 'TestProp.4');
-      $props = $this->pdo->getUserProperties(self::USER_ID);
+      self::$pdo->assignUserProperty(self::USER_ID, 'TestProp.1');
+      self::$pdo->assignUserProperty(self::USER_ID, 'TestProp.2');
+      self::$pdo->assignUserProperty(self::USER_ID, 'TestProp.3');
+      self::$pdo->assignUserProperty(self::USER_ID, 'TestProp.4');
+      $props = self::$pdo->getUserProperties(self::USER_ID);
       PHPUnit_Framework_Assert::assertEquals(4, count($props));
       
-      $this->pdo->revokeUserProperty(self::USER_ID, 'TestProp.1');
-      $this->pdo->revokeUserProperty(self::USER_ID, 'TestProp.2');
-      $this->pdo->revokeUserProperty(self::USER_ID, 'TestProp.3');
-      $this->pdo->revokeUserProperty(self::USER_ID, 'TestProp.4');
-      $props = $this->pdo->getUserProperties(self::USER_ID);
+      self::$pdo->revokeUserProperty(self::USER_ID, 'TestProp.1');
+      self::$pdo->revokeUserProperty(self::USER_ID, 'TestProp.2');
+      self::$pdo->revokeUserProperty(self::USER_ID, 'TestProp.3');
+      self::$pdo->revokeUserProperty(self::USER_ID, 'TestProp.4');
+      $props = self::$pdo->getUserProperties(self::USER_ID);
       PHPUnit_Framework_Assert::assertEquals(0, count($props));
-      
+   }
+
+   /**
+    * @depends testCreateUser
+    */
+   public function testUserSettings($userId)
+   {
       // User Settings Tests
-      $settings = $this->pdo->getUserSettingsForDomain(self::USER_ID,self::SETTINGS_DOMAIN);
+      $settings = self::$pdo->getUserSettingsForDomain(self::USER_ID, 
+         self::SETTINGS_DOMAIN);
       PHPUnit_Framework_Assert::assertEquals(0, count($settings));
       
-      $this->pdo->setUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.1','TestValue.1');
-      $this->pdo->setUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.2','TestValue.2');
-      $this->pdo->setUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.3','TestValue.3');
-      $this->pdo->setUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.4','TestValue.4');
-
-      $settings = $this->pdo->getAllUserSettings(self::USER_ID);
-      PHPUnit_Framework_Assert::assertEquals(4, count($settings));
-
-      $settings = $this->pdo->getUserSettingsForDomain(self::USER_ID,self::SETTINGS_DOMAIN);
+      self::$pdo->setUserSetting(self::USER_ID, self::SETTINGS_DOMAIN, 
+         'TestSetting.1', 'TestValue.1');
+      self::$pdo->setUserSetting(self::USER_ID, self::SETTINGS_DOMAIN, 
+         'TestSetting.2', 'TestValue.2');
+      self::$pdo->setUserSetting(self::USER_ID, self::SETTINGS_DOMAIN, 
+         'TestSetting.3', 'TestValue.3');
+      self::$pdo->setUserSetting(self::USER_ID, self::SETTINGS_DOMAIN, 
+         'TestSetting.4', 'TestValue.4');
+      
+      $settings = self::$pdo->getAllUserSettings(self::USER_ID);
       PHPUnit_Framework_Assert::assertEquals(4, count($settings));
       
-      $settingVal = $this->pdo->getUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.4');
+      $settings = self::$pdo->getUserSettingsForDomain(self::USER_ID, 
+         self::SETTINGS_DOMAIN);
+      PHPUnit_Framework_Assert::assertEquals(4, count($settings));
+      
+      $settingVal = self::$pdo->getUserSetting(self::USER_ID, 
+         self::SETTINGS_DOMAIN, 'TestSetting.4');
       PHPUnit_Framework_Assert::assertEquals('TestValue.4', $settingVal);
-
-      $this->pdo->setUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.4','TestUpdate.4');
-      $settingVal = $this->pdo->getUserSetting(self::USER_ID,self::SETTINGS_DOMAIN,'TestSetting.4');
+      
+      self::$pdo->setUserSetting(self::USER_ID, self::SETTINGS_DOMAIN, 
+         'TestSetting.4', 'TestUpdate.4');
+      $settingVal = self::$pdo->getUserSetting(self::USER_ID, 
+         self::SETTINGS_DOMAIN, 'TestSetting.4');
       PHPUnit_Framework_Assert::assertEquals('TestUpdate.4', $settingVal);
       
-      $this->pdo->deleteUserSettingsForDomain(self::USER_ID,self::SETTINGS_DOMAIN);
-      $settings = $this->pdo->getUserSettingsForDomain(self::USER_ID,self::SETTINGS_DOMAIN);
+      self::$pdo->deleteUserSettingsForDomain(self::USER_ID, 
+         self::SETTINGS_DOMAIN);
+      $settings = self::$pdo->getUserSettingsForDomain(self::USER_ID, 
+         self::SETTINGS_DOMAIN);
       PHPUnit_Framework_Assert::assertEquals(0, count($settings));
+   }
+
+   /**
+    * @depends testUserSettings
+    */
+   public function testDeleteUser()
+   {
+      // Delete Test
+      self::$pdo->delete(self::USER_ID);
+      $retUser = self::$pdo->get(self::USER_ID);
+      PHPUnit_Framework_Assert::assertNull($retUser);
    }
 }
 
