@@ -59,6 +59,7 @@ abstract class EnrollmentStatus
  */
 class ForumServicePDO
 {
+   const ROOT_NODE = '#root';
    const FOLDER_NODE = '#folder';
    public static $ENROLLMENT_CODES = array(
       'I',
@@ -155,6 +156,17 @@ class ForumServicePDO
          $this->db->forum()->insert($newForum);
          $this->setForumEnrollmentStatus($newForum['id'], $forumOwner, 
             EnrollmentStatus::Joined);
+         
+         // Create a root node in the forum file system
+         $newFolder = array(
+            'id' => '',
+            'forumId' => $newForum['id'],
+            'parentId' => ForumServicePDO::ROOT_NODE,
+            'name' => $newForum['name'],
+            'contentType' => ForumServicePDO::FOLDER_NODE
+         );
+         $this->createFileNode($newFolder);
+         
          return $newForum['id'];
       }
       catch (Exception $e)
@@ -573,9 +585,9 @@ class ForumServicePDO
       {
          $node['id'] = AppUtils::guid();
          $this->db->forum_file_node()->insert((array) $node);
-         AppUtils::logDebug(
-            "Created file node with ID: {" . $node['id'] . "} and parentId {" .
-                $node['parentId'] . "}");
+//          AppUtils::logDebug(
+//             "Created file node with ID: {" . $node['id'] . "} and parentId {" .
+//                 $node['parentId'] . "}");
          return $node;
       }
       catch (Exception $e)
@@ -633,7 +645,7 @@ class ForumServicePDO
          // Get the IDs of all the children
          foreach ($this->db->forum_file_node()->where("parentId=?", $id) as $childNode)
          {
-            AppUtils::logDebug("Found children for parent {" . $id . "}");
+//            AppUtils::logDebug("Found children for parent {" . $id . "}");
             $this->deleteFileNode($childNode['id']);
          }
          
@@ -649,9 +661,9 @@ class ForumServicePDO
                unlink(FORUM_UPLOAD_DIR . $fileNode['id']);
             }
             
-            AppUtils::logDebug(
-               "Deleting node with ID: {" . $fileNode['id'] . "} and parentId {" .
-                   $fileNode['parentId'] . "}");
+//             AppUtils::logDebug(
+//                "Deleting node with ID: {" . $fileNode['id'] . "} and parentId {" .
+//                    $fileNode['parentId'] . "}");
             $node->delete();
          }
       }
