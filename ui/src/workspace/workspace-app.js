@@ -5,19 +5,24 @@ angular.module(
             'services.ImpulseService', 'services.EventService' ]).config([ '$rootScopeProvider', function($rootScopeProvider) {
 } ])
 
-.run([ 'loginService', 'eventService', function(loginService, eventService) {
+.run([ '$window', 'loginService', 'eventService', function($window, loginService, eventService) {
    loginService.restoreSession();
    var eventParams = {
       debugMode: true,
    };
 
    eventService.init(eventParams);
-} ])
+
+   $window.addEventListener('beforeunload', function() {
+      // If we do this this way a refresh will require the user to log in again!
+      // loginService.logout();
+    });
+ } ])
 
 .controller(
       'WorkspaceController',
-      [ '$scope', '$rootScope', 'loginService', 'eventService', 'settingsService', 'impulseService', 'LOGIN_EVENTS','APP_EVENTS',
-            function($scope, $rootScope, loginService, eventService, settingsService, impulseService, LOGIN_EVENTS,APP_EVENTS) {
+      [ '$scope', '$window', 'eventService', 'settingsService', 'impulseService', 'LOGIN_EVENTS','APP_EVENTS',
+            function($scope, $window, eventService, settingsService, impulseService, LOGIN_EVENTS,APP_EVENTS) {
 
                $scope.sidebarCollapsed = false;
                $scope.forumExplorerVisible = false;
@@ -83,11 +88,6 @@ angular.module(
 
                $scope.$on(APP_EVENTS.ACTIVATE_MODULE, function(event, moduleId) {
                   $scope.currentPage = moduleId;
-               });
-               
-               $scope.$on('$destroy', function() {
-//                  alert("destroy");
-//                  loginService.logout();
                });
                
                $scope.synchronize = function() {
