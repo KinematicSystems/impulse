@@ -6,6 +6,7 @@ module.exports = function(grunt) {
 
    // Project configuration.
    grunt.initConfig({
+      release_path: '/src/www/htdocs/impulse-staging/',
       pkg : grunt.file.readJSON('package.json'),
       src : {
          jsFiles : [ 'src/admin/**/*.js', 'src/common/**/*.js', 'src/workspace/**/*.js' ]
@@ -57,6 +58,7 @@ module.exports = function(grunt) {
               { src : 'vendor/textAngular/dist/textAngular-rangy.min.js', dest : 'dist/'},
               { src : 'vendor/textAngular/dist/textAngular-sanitize.min.js', dest : 'dist/'},
               { src : 'vendor/textAngular/dist/textAngular.min.js', dest : 'dist/'},
+              { src : 'vendor/textAngular/dist/textAngular.css', dest : 'dist/'},
               { src : 'vendor/rangy/rangy-core.min.js', dest : 'dist/'},
               { src : 'vendor/rangy/rangy-selectionsaverestore.min.js', dest : 'dist/'},
               { src : 'vendor/moment/min/moment.min.js', dest : 'dist/'},
@@ -79,7 +81,7 @@ module.exports = function(grunt) {
             ]
        },
        release : {
-           expand: true, cwd : 'dist/', src: '**', dest : '/src/www/htdocs/impulse-staging/'
+           expand: true, cwd : 'dist/', src: '**', dest : '<%= release_path %>'
         }
       },
       jshint : {
