@@ -114,9 +114,9 @@
 <body ng-controller="WorkspaceController">
    <div id="topBar" ng-include="'topbar/topbar.html'"></div>
    <div id="desktop">
-      <div id="sideBar" ng-show="userId" ng-include="'sidebar.html'" 
+      <div id="sideBar" ng-show="isCollaborator" ng-include="'sidebar.html'" 
          ng-class="{'sidebarCollapsed': $parent.sidebarCollapsed, 'sidebarExpanded': !$parent.sidebarCollapsed}"></div>
-      <div id="forumBar" ng-if="isCollaborator" ng-include="'forum-explorer/explorer.html'" ng-show="forumExplorerVisible" class="forumBar-show ng-hide">
+      <div id="forumBar" ng-include="'forum-explorer/explorer.html'" ng-show="forumExplorerVisible" class="forumBar-show ng-hide">
       </div>
       <div id="workspace">
          <div ng-include="'../common/login/login.tpl.html'" ng-show="currentPage==='login'"></div>
