@@ -51,7 +51,6 @@ angular.module('adminApp', [ 'ui.bootstrap', 'ngRoute',
 		'LOGIN_EVENTS',
 		function($scope, $location, $route, loginService,
 				LOGIN_EVENTS) {
-			$scope.loggedIn = loginService.isLoggedIn();
 
 			$scope.$on(LOGIN_EVENTS.NOT_AUTHENTICATED, function(event, params) {
 				$scope.loggedIn = false;

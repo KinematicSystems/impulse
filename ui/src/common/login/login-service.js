@@ -12,21 +12,44 @@ angular.module('services.LoginService', [ 'services.ImpulseService' ]).factory(
             function($http, $window, $rootScope, impulseService, LOGIN_EVENTS) {
                var apiUrl = '../api/';
 
+               var clearUser = function(eventID, msg) {
+                  $window.sessionStorage.removeItem("userInfo");
+                  impulseService.setCurrentUser(null);
+                  $rootScope.$broadcast(eventID, msg);
+               };
+
+               var setUser = function(userInfo, eventID) {
+                  $window.sessionStorage.setItem("userInfo", JSON.stringify(userInfo));
+                  impulseService.setCurrentUser(userInfo.userId);
+                  impulseService.setCollaborator((userInfo.accessLevel === 'sysuser'));
+                  $rootScope.$broadcast(LOGIN_EVENTS.LOGIN_SUCCESS, userInfo);
+               };
+
                // Return the service object functions
                return {
-                  isLoggedIn: function() {
-                     var storedUser = $window.sessionStorage.getItem("userInfo");
-                     return (storedUser !== undefined && storedUser !== null && storedUser !== "null");
-                  },
-                  restoreSession: function() {
+                   restoreSession: function() {
                      // If the user is still in the session fire a login success
                      var storedUserData = $window.sessionStorage.getItem("userInfo");
                      if (storedUserData !== undefined && storedUserData !== null && storedUserData !== "null")
                      {
                         var storedUser = JSON.parse(storedUserData);
-                        impulseService.setCurrentUser(storedUser.userId);
-                        impulseService.setCollaborator((storedUser.accessLevel === 'sysuser'));
-                        $rootScope.$broadcast(LOGIN_EVENTS.LOGIN_SUCCESS, storedUser);
+
+                        // Now ping the server to see if the server side session is still valid
+                        $http({
+                           method: 'GET',
+                           url: apiUrl + 'login/' + storedUser.userId
+                        }).success(function(data, status) {
+                           if (status === 200)
+                           {
+                              setUser(storedUser, LOGIN_EVENTS.LOGIN_SUCCESS);
+                           }
+                           else
+                           {
+                              clearUser(LOGIN_EVENTS.LOGOUT_SUCCESS, "User Expired!");
+                           }
+                        }).error(function(data, status) {
+                           clearUser(LOGIN_EVENTS.LOGOUT_SUCCESS, "User Expired!");
+                        });
                      }
                   },
                   login: function(userId, password) {
@@ -40,22 +63,18 @@ angular.module('services.LoginService', [ 'services.ImpulseService' ]).factory(
                      }).success(function(data, status) {
                         if (status === 200)
                         {
-                           var userInfo = {userId: userId, accessLevel: data};
-                           $window.sessionStorage.setItem("userInfo", JSON.stringify(userInfo));
-                           impulseService.setCurrentUser(userId);
-                           impulseService.setCollaborator((data === 'sysuser'));
-                           $rootScope.$broadcast(LOGIN_EVENTS.LOGIN_SUCCESS, userInfo);
+                           var userInfo = {
+                              userId: userId,
+                              accessLevel: data
+                           };
+                           setUser(userInfo, LOGIN_EVENTS.LOGIN_SUCCESS);
                         }
                         else
                         {
-                           $window.sessionStorage.removeItem("userInfo");
-                           impulseService.setCurrentUser(null);
-                           $rootScope.$broadcast(LOGIN_EVENTS.LOGIN_FAILED, "Bad Login!");
+                           clearUser(LOGIN_EVENTS.LOGIN_FAILED, "Login Failure!");
                         }
                      }).error(function(data, status) {
-                        $window.sessionStorage.removeItem("userInfo");
-                        impulseService.setCurrentUser(null);
-                        $rootScope.$broadcast(LOGIN_EVENTS.LOGIN_FAILED, data.details); // Error details
+                        clearUser(LOGIN_EVENTS.LOGIN_FAILED, data.details);
                      });
                   },
                   logout: function() {
@@ -63,14 +82,13 @@ angular.module('services.LoginService', [ 'services.ImpulseService' ]).factory(
                         method: 'GET',
                         url: apiUrl + 'logout'
                      }).success(function(data, status) {
-                        $window.sessionStorage.removeItem("userInfo");
-                        impulseService.setCurrentUser(null);
-                        $rootScope.$broadcast(LOGIN_EVENTS.LOGOUT_SUCCESS);
+                        clearUser(LOGIN_EVENTS.LOGOUT_SUCCESS, "User logged out!");
                      });
                   }
                };
             } ])
 // securityInterceptor $http interceptor
+// This will ensure sure that you can't make a service call without being authenticated            
 .factory('securityInterceptor', [ '$q', '$rootScope', 'LOGIN_EVENTS', function($q, $rootScope, LOGIN_EVENTS) {
    return {
       'responseError': function(rejection) {
