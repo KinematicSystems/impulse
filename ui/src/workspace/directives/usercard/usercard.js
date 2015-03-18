@@ -22,6 +22,6 @@ angular.module('workspaceDirectives').directive('userCard', [ '$document', funct
 .run([ '$templateCache', function($templateCache) {
    'use strict';
    // Not used
-   $templateCache.put('templates/usercard/usercard.html', "<div>{{userModel}}</span>\n");
+   $templateCache.put('templates/usercard/usercard.html', "<div>{{userModel}}</div>\n");
 
 } ]);

@@ -1,0 +1,10 @@
+<a href="" ng-click="linkClicked(userId)">
+   <span class="fa fa-user" style="padding-right: 2px;"></span>
+   {{userId}}
+</a>
+<div user-card ng-if="userModel" user-model="userModel" ng-mouseleave="onMouseLeave($event)" class="userLink-details">
+   <a href="" style="color: Green; float: right;" ng-click="chatWithUser(userModel)">
+      <i title="Send Chat Message" class="fa fa-wechat"></i>
+   </a>
+</div>
+
