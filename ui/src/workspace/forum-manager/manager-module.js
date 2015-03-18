@@ -14,14 +14,14 @@ angular
                   'forumService',
                   function($scope, dialogs, LOGIN_EVENTS, COLLAB_EVENTS, ENROLLMENT_STATUS, impulseService, forumManagerService,
                         forumService) {
-                     var currentUserId = impulseService.getCurrentUser();
+                     var currentUser = impulseService.getCurrentUser();
                      $scope.editMode = 'M';
                      $scope.headingText = '';
                      $scope.inviteList = [];
                      $scope.inviteForumId = '';
 
                      $scope.$on(LOGIN_EVENTS.LOGIN_SUCCESS, function(event, params) {
-                        currentUserId = params;
+                        currentUser = params;
                      });
 
                      $scope.$on(LOGIN_EVENTS.LOGOUT_SUCCESS, function(event, params) {
@@ -83,7 +83,7 @@ angular
 
                            if (!forum)
                            {
-                              forumService.createForum(forumData.name, forumData.description, currentUserId).success(
+                              forumService.createForum(forumData.name, forumData.description, currentUser.userId).success(
                                     function(forum, status) {
                                        impulseService.showNotification("Forum Created", "'" + forumData.name + "' successfully created.");
                                     });
@@ -92,7 +92,7 @@ angular
                            {
                               forum.name = forumData.name;
                               forum.description = forumData.description;
-                              forumService.updateForum(forum, currentUserId).success(function(forum, status) {
+                              forumService.updateForum(forum, currentUser.userId).success(function(forum, status) {
                                  impulseService.showNotification("Forum Updated", "'" + forumData.name + "' successfully updated.");
                               });
                            }
@@ -142,7 +142,7 @@ angular
                         var dlg = impulseService.showConfirm("Confirm Leave", msg);
                         dlg.result.then(function(btn) {
                            // Yes
-                           forumService.setForumEnrollment(forumId, currentUserId, ENROLLMENT_STATUS.LEFT);
+                           forumService.setForumEnrollment(forumId, currentUser.userId, ENROLLMENT_STATUS.LEFT);
                         }, function(btn) {
                            // No (Do Nothing)
                         });
