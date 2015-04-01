@@ -50,7 +50,7 @@ $app->get('/events/:userId/:topic', 'EventService::popTopicEvents');
  */
 class EventService
 {
-
+   
    /**
     *
     * @see EventServicePDO::popTopicEvents()
@@ -85,9 +85,9 @@ class EventService
          $pdo = new EventServicePDO();
          
          $events = $pdo->popEvents($userId);
-//TODO: Make event frames STOMP compliant
-//          $stompMsg = 'MESSAGE\n'';
-//          $stompMsg += 'sourceUserId:'.$event['sourceUserId'].'\n';
+         // TODO: Make event frames STOMP compliant
+         // $stompMsg = 'MESSAGE\n'';
+         // $stompMsg += 'sourceUserId:'.$event['sourceUserId'].'\n';
          AppUtils::sendResponse($events);
       }
       catch (PDOException $e)
@@ -134,17 +134,16 @@ class EventService
       try
       {
          $pdo = new EventServicePDO();
-          
+         
          $result = $pdo->hasSubscriber($userId);
-          
+         
          AppUtils::sendResponse($result);
       }
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
-         AppUtils::sendError($e->getCode(),
-         "Error checking user subscription status",
-         $e->getMessage());
+         AppUtils::sendError($e->getCode(), 
+            "Error checking user subscription status", $e->getMessage());
       }
    }
 
@@ -157,21 +156,19 @@ class EventService
       try
       {
          $pdo = new EventServicePDO();
-   
+         
          $result = $pdo->getOnlineUsers();
-   
+         
          AppUtils::sendResponse($result);
       }
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
-         AppUtils::sendError($e->getCode(),
-         "Error getting online users",
-         $e->getMessage());
+         AppUtils::sendError($e->getCode(), "Error getting online users", 
+            $e->getMessage());
       }
    }
-    
-      
+
    /**
     *
     * @see EventServicePDO::unsubscribe()
