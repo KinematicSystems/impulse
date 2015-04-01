@@ -53,7 +53,7 @@ angular
                };
 
                $scope.chatWithUser = function(user) {
-                  alert("This will open a chat session with '" + user.firstName + " " + user.lastName + "'")
+                  alert("This will open a chat session with '" + user.firstName + " " + user.lastName + "'");
                };
 
                $scope.linkClicked = function(userId) {
