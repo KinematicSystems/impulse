@@ -58,7 +58,7 @@ module.exports = function(grunt) {
               { src : 'vendor/textAngular/dist/textAngular-rangy.min.js', dest : 'dist/'},
               { src : 'vendor/textAngular/dist/textAngular-sanitize.min.js', dest : 'dist/'},
               { src : 'vendor/textAngular/dist/textAngular.min.js', dest : 'dist/'},
-              { src : 'vendor/textAngular/dist/textAngular.css', dest : 'dist/'},
+              { src : 'vendor/textAngular/src/textAngular.css', dest : 'dist/'},
               { src : 'vendor/rangy/rangy-core.min.js', dest : 'dist/'},
               { src : 'vendor/rangy/rangy-selectionsaverestore.min.js', dest : 'dist/'},
               { src : 'vendor/moment/min/moment.min.js', dest : 'dist/'},
