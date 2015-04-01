@@ -6,7 +6,7 @@ angular.module('impulseFilters', [])
    var formatStr = "MMM d, y 'at' h:mm a"; // Sep 3, 2010 at 4:34 PM
 
    return function(dateStr) {
-      if (typeof(dateStr) === undefined)
+      if (typeof(dateStr) === undefined || typeof(dateStr) === "undefined")
       {
          return;
       }
