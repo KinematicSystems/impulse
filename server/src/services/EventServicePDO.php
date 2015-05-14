@@ -52,11 +52,25 @@ class EventServicePDO
       $this->db = new NotORM(getPDO());
    }
 
+   public function initSubscriptionsForUser($userId)
+   {
+      // User Directed Events
+      $this->subscribe($userId, 'USER.' . $userId);
+      
+      $pdo = new ForumServicePDO();
+      $forums = $pdo->getForumsForUser($userId);
+      
+      foreach ($forums as $forum)
+      {
+        $this->subscribe($userId, 'FORUM.' . $forum['id']);
+      }
+   }
+
    public function subscribe($userId, $topic)
    {
-      // Setting the session id so that if the session times out and the record is removed from 
-      // the session_data table the deletion can cascade to event descriptions 
-     
+      // Setting the session id so that if the session times out and the record
+      // is removed from
+      // the session_data table the deletion can cascade to event descriptions
       try
       {
          $sub = array(
@@ -64,14 +78,15 @@ class EventServicePDO
             "topic" => $topic,
             "session_id" => AppUtils::getSessionId()
          );
-         
+
          $this->db->event_subscriptions()->insert($sub);
       }
       catch (PDOException $e)
       {
-         if (((int)$e->getCode()) != 23000) // Duplicate Key so OK
+         if (((int) $e->getCode()) != 23000) // Duplicate Key so OK
          {
-            throw $e;
+             AppUtils::logError($e, __METHOD__);
+             throw $e;
          }
       }
    }
@@ -134,7 +149,7 @@ class EventServicePDO
          throw $e;
       }
    }
-   
+
    public function pushEvent($sourceUserId, $topic, $content)
    {
       $eventRecord = array(

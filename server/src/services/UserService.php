@@ -32,19 +32,20 @@
 require_once 'UserServicePDO.php';
 
 // Slim Framework Route Mappings
-// (order matters if you move password below /user/:id it will think the user id
-// is password)
-$app->put('/users/password', 'UserService::updatePassword');
-$app->get('/users/access', 'UserService::getAccess');
 $app->post('/users/:id', 'UserService::create');
 $app->get('/users/:id', 'UserService::get');
 $app->get('/users', 'UserService::getAll');
 $app->put('/users/:id', 'UserService::update');
 $app->delete('/users/:id', 'UserService::delete');
+
+$app->put('/users/:id/password', 'UserService::updatePassword');
+$app->get('/users/:id/access', 'UserService::getAccess');
+
 $app->get('/users/:id/properties', 'UserService::getUserProperties');
-$app->put('/users/:id/property/:propId', 'UserService::assignUserProperty');
-$app->delete('/users/:id/property/:propId', 'UserService::revokeUserProperty');
-$app->get('/properties', 'UserService::getAllProperties');
+$app->put('/users/:id/properties/:propId', 'UserService::assignUserProperty');
+$app->delete('/users/:id/properties/:propId', 'UserService::revokeUserProperty');
+$app->get('/user-properties', 'UserService::getAllProperties');
+
 $app->get('/users/:id/settings', 'UserService::getAllUserSettings');
 $app->get('/users/:id/settings/:domain', 
    'UserService::getUserSettingsForDomain');
@@ -190,8 +191,9 @@ class UserService
          {
             // get and decode JSON request body
             $request = $app->request();
-            $body = $request->getBody();
-            $passwordData = (array) json_decode($body);
+//            $body = $request->getBody();
+//            $passwordData = (array) json_decode($body);
+            $passwordData = $request->params();
             
             $pdo->updatePassword($id, $passwordData['oldPassword'], 
                $passwordData['newPassword']);
@@ -424,9 +426,9 @@ class UserService
          $pdo = new UserServicePDO();
          // get and decode JSON request body
          $request = $app->request();
-         $body = $request->getBody();
-         $settingData = (array) json_decode($body);
-         $settingValue = $settingData['settingValue'];
+//         $body = $request->getBody();
+//         $settingData = (array) json_decode($body);
+         $settingValue = $request->params('settingValue');
          
          $pdo->setUserSetting($id, $domain, $settingKey, $settingValue);
          AppUtils::sendResponse($settingValue);

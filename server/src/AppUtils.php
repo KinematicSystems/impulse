@@ -46,7 +46,7 @@ class AppUtils
    const USER_ERROR_CODE = 98;
    const DB_ERROR_CODE = 99;
    private static $testMode = false;
-   private static $stompMode = false;
+   private static $stompMode = true;
    private static $testUserId = NULL;
    private static $testSessionId = "test-id-123";
    private static $messageTopic = '/topic/chat.general';
@@ -172,12 +172,12 @@ class AppUtils
       $eventDescription, $eventParameters)
    {
       $impulseHeader = array(
-         "sourceUserId" => self::getUserId(),
          "persistent" => 'false'
       );
       
       $content = array(
-         "type" => $eventId,
+         "sourceUserId" => self::getUserId(),
+          "type" => $eventId,
          "description" => $eventDescription,
          "params" => $eventParameters
       );
@@ -188,7 +188,7 @@ class AppUtils
          try
          {
             $stomp = new Stomp('tcp://localhost:61613', 'admin', 'password');
-            $stomp->send(self::$topic . $topicId, $msg, $impulseHeader);
+            $stomp->send(self::$topic . $eventDomain . '.' . $topicId, $msg, $impulseHeader);
             unset($stomp);
          }
          catch (StompException $e)
@@ -311,13 +311,11 @@ class AppUtils
          // ZEBRA_SESSION
          $link = mysqliConnect();
          self::$xactSession = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
-         //AppUtils::logDebug("Session Created: setLoginValid() with id " . session_id());
-         
+        
          $_SESSION['userValid'] = 1;
          $_SESSION['userId'] = $userId;
          $_SESSION['userAccessLevel'] = $accessLevel;
          $_SESSION['userAgent'] = md5($_SERVER['HTTP_USER_AGENT']);
-         //AppUtils::logDebug("Session assigned setLoginValid() with id " . session_id());
       }
    }
 
@@ -364,6 +362,47 @@ class AppUtils
    }
 
    /**
+    * Get user access level from session
+    *
+    * @return string user access level
+    */
+   public static function getUserAccessLevel()
+   {
+      if (self::$testMode)
+      {
+         return 'sysuser';
+      }
+      else
+      {
+         $session = NULL;
+   
+         // ZEBRA_SESSION
+         if (isset(self::$xactSession))
+         {
+            $session = self::$xactSession;
+         }
+         else
+         {
+            $link = mysqliConnect();
+            $session = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
+         }
+          
+         if (isset($_SESSION['userAccessLevel']))
+         {
+            self::$xactSession = $session;
+            return $_SESSION['userAccessLevel'];
+         }
+         else
+         {
+            //AppUtils::logDebug("Session: getUserId() returning NULL");
+            // Remove the invalid session from database
+            $session->stop();
+            return NULL;
+         }
+      }
+   }
+    
+   /**
     * Get session ID
     *
     * @return string Session ID
@@ -392,12 +431,15 @@ class AppUtils
          if (isset($_SESSION['userValid']) && $_SESSION['userValid'])
          {   
             self::$xactSession = $session;
-            return session_id();
+            $sid = session_id(); 
+            //self::logDebug("Returning session id: $sid");  
+            return $sid;
          }
          else 
          {
             // remove this invalid session
             $session->stop();
+            //self::logDebug("Returning session id: NO-SESSION-ID");  
             return 'NO-SESSION-ID';            
          }   
       }

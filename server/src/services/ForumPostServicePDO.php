@@ -93,6 +93,27 @@ class ForumPostServicePDO
    }
 
    /**
+    * Returns all post entries for the specified forum
+    *
+    * @throws PDOException
+    * @return array Array of Post Template objects
+    */
+   public function getPostTemplates()
+   {
+      try
+      {
+         return AppUtils::dbToArray(
+            $this->db->post_template()
+            ->where("category=?", 'General')
+            ->order('name asc'));
+      }
+      catch (PDOException $e)
+      {
+         throw $e;
+      }
+   }
+    
+   /**
     * Returns the forum posting with ID $postId
     *
     * @param string $forumId
@@ -194,7 +215,7 @@ class ForumPostServicePDO
       FROM forum f
       LEFT JOIN forum_user u
       ON (f.id = u.forumId AND u.userId = :userId)
-      LEFT JOIN forum_post p
+      JOIN forum_post p
       ON (f.id = p.forumId)
       GROUP BY f.id";
       

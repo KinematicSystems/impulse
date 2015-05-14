@@ -32,11 +32,11 @@
 require_once 'ForumServicePDO.php';
 
 // Slim Framework Route Mappings
-$app->get('/forums/admin', 'ForumAdminService::getAllForums');
-$app->get('/forums/admin/:id', 'ForumAdminService::getForum');
-$app->post('/forums/admin', 'ForumAdminService::createForum');
-$app->put('/forums/admin/:id', 'ForumAdminService::updateForum');
-$app->delete('/forums/admin/:id', 'ForumAdminService::deleteForum');
+$app->get('/forums', 'ForumAdminService::getAllForums');
+$app->get('/forums/:id', 'ForumAdminService::getForum');
+$app->post('/forums', 'ForumAdminService::createForum');
+$app->put('/forums/:id', 'ForumAdminService::updateForum');
+$app->delete('/forums/:id', 'ForumAdminService::deleteForum');
 
 /**
  * ForumAdminService
@@ -83,7 +83,7 @@ class ForumAdminService
       {
          $pdo = new ForumServicePDO();
          
-         $forum = $pdo->getForum();
+         $forum = $pdo->getForum($id);
          AppUtils::sendResponse($forum);
       }
       catch (PDOException $e)
@@ -112,17 +112,23 @@ class ForumAdminService
          $forumId = $pdo->createForum($forumData['name'], $forumData['description'], $forumData['userId']);
 
          // Create a subscription automagically for the user who created the forum
-         $eventPdo = new EventServicePDO();
-         $eventPdo->subscribe($forumData['userId'], ForumEvent::DOMAIN . '.' . $forumId);
+         // Moved to client 4/29/2014
+         //$eventPdo = new EventServicePDO();
+         //$eventPdo->subscribe($forumData['userId'], ForumEvent::DOMAIN . '.' . $forumId);
           
          $params = array(
             'forumId' => $forumId,
             'changeType' => ForumEvent::CREATE
          );
           
-         AppUtils::sendEvent(ForumEvent::DOMAIN, $forumId, ForumEvent::CHANGE,
-         "Forum created: " . $forumData['name'], $params);
-          
+         // No point in sending this nobody is listening until after this returns
+         // 4/29/2014
+         //AppUtils::sendEvent(ForumEvent::DOMAIN, $forumId, ForumEvent::CHANGE,
+         //"Forum created: " . $forumData['name'], $params);
+
+         AppUtils::sendEvent(UserEvent::DOMAIN, $forumData['userId'], UserEvent::JOINED,
+         "Forum joined via creation: " . $forumData['name'], $params);
+                  
          AppUtils::sendResponse($forumId);
       }
       catch (Exception $e)

@@ -75,32 +75,37 @@ class AuthenticationService
          $login = (array) json_decode($body);
          $loginOK = false;
          
-         //AppUtils::logDebug("attempting login ".$login['userId'].'/'.$login['password']);
+         // AppUtils::logDebug("attempting login
+         // ".$login['userId'].'/'.$login['password']);
          if (!isset($login['userId']))
          {
-             AppUtils::sendError(0, "Login Error", 
-               "User ID was not specified.", 401);
+            AppUtils::sendError(0, "Login Error", "User ID was not specified.", 
+               401);
             return;
          }
          
          if (!isset($login['password']))
          {
-            AppUtils::sendError(0, "Login Error", 
-               "Password was not specified.", 401);
+            AppUtils::sendError(0, "Login Error", "Password was not specified.", 
+               401);
             return;
          }
          
          $userService = new UserServicePDO();
          if ($userService->validateUser($login['userId'], $login['password']))
          {
-            //AppUtils::logDebug($login['userId'].' Successfully logged in.');
+            // AppUtils::logDebug($login['userId'].' Successfully logged in.');
             $access = $userService->getAccess($login['userId']);
-            AppUtils::setLoginValid($login['userId'],$access);
-            AppUtils::sendResponse($access);
+            AppUtils::setLoginValid($login['userId'], $access);
+            $rsp = array(
+               'userId' => $login['userId'],
+               'accessLevel' => $access
+            );
+            AppUtils::sendResponse($rsp);
          }
          else
          {
-            //AppUtils::logDebug($login['userId'].' Failed login!');
+            // AppUtils::logDebug($login['userId'].' Failed login!');
             AppUtils::sendError(0, "Login Error", 
                "User ID/Password combination is invalid.", 401);
          }

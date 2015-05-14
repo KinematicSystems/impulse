@@ -31,7 +31,7 @@
  */
 
 // Slim Framework Route Mappings
-$app->post('/forums/upload', 'ForumUploadService::upload');
+$app->post('/forum-upload', 'ForumUploadService::upload');
 
 /**
  * ForumUploadService
@@ -114,7 +114,12 @@ class ForumUploadService
             $fileId = $fileNode['id'];
             
             move_uploaded_file($tempFileName, FORUM_UPLOAD_DIR . $fileId);
+
+            $fileNode['changeType'] = ForumEvent::CREATE;
             
+            AppUtils::sendEvent(ForumEvent::DOMAIN, $forumId, ForumEvent::NODE_CHANGE,
+            "Node created: " . $fileNode['name'], $fileNode);
+                        
             AppUtils::sendResponse($fileNode);
          }
          catch (Exception $e)

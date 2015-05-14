@@ -32,13 +32,15 @@
 require_once 'ForumPostServicePDO.php';
 
 // Slim Framework Route Mappings
-$app->get('/forums/post/overviews', 'ForumPostService::getPostOverviews');
-$app->get('/forums/:forumId/post', 'ForumPostService::getForumPost');
-$app->get('/forums/:forumId/post/summary', 'ForumPostService::getPostSummary');
-$app->get('/forums/:forumId/post/:id', 'ForumPostService::getPosting');
-$app->post('/forums/post', 'ForumPostService::createForumPostEntry');
-$app->put('/forums/post', 'ForumPostService::updateForumPostEntry');
-$app->delete('/forums/post', 'ForumPostService::purgeForumPost');
+$app->get('/posting-overviews', 'ForumPostService::getPostOverviews');
+$app->get('/posting-templates', 'ForumPostService::getPostTemplates');
+$app->get('/posting/:forumId/post-summary', 'ForumPostService::getPostSummary');
+$app->get('/posting/:forumId/post', 'ForumPostService::getForumPosts');
+$app->get('/posting/:forumId/post/:id', 'ForumPostService::getPosting');
+$app->post('/posting/:forumId/post', 'ForumPostService::createForumPostEntry');
+$app->put('/posting/:forumId/post/:postId', 
+   'ForumPostService::updateForumPostEntry');
+$app->delete('/posting/:forumId/post', 'ForumPostService::purgeForumPost');
 
 /**
  * ForumPostService
@@ -58,7 +60,7 @@ class ForumPostService
     *
     * @see ForumPostServicePDO::getForumPost()
     */
-   public static function getForumPost($forumId)
+   public static function getForumPosts($forumId)
    {
       try
       {
@@ -135,17 +137,37 @@ class ForumPostService
       catch (PDOException $e)
       {
          AppUtils::logError($e, __METHOD__);
-         AppUtils::sendError($e->getCode(),
-         "Error getting forum post overviews for user ID $userId",
-         $e->getMessage());
+         AppUtils::sendError($e->getCode(), 
+            "Error getting forum post overviews for user ID $userId", 
+            $e->getMessage());
       }
+   }
+
+   /**
+    *
+    * @see ForumPostServicePDO::getPostTemplates()
+    */
+   public static function getPostTemplates()
+   {
+      try
+      {
+         $pdo = new ForumPostServicePDO();
+         $results = $pdo->getPostTemplates();
+         AppUtils::sendResponse($results);
       }
-       
+      catch (PDOException $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error getting forum post templates", $e->getMessage());
+      }
+   }
+
    /**
     *
     * @see ForumPostServicePDO::createForumPostEntry()
     */
-   public static function createForumPostEntry()
+   public static function createForumPostEntry($forumId)
    {
       $app = \Slim\Slim::getInstance();
       
@@ -158,6 +180,16 @@ class ForumPostService
          $forumPost['userId'] = AppUtils::getUserId();
          $pdo = new ForumPostServicePDO();
          $forumPostId = $pdo->createForumPostEntry($forumPost);
+         
+         $eventData = array(
+            'postId' => $forumPostId,
+            'changeType' => ForumEvent::CREATE
+         );
+         
+         AppUtils::sendEvent(ForumEvent::DOMAIN, $forumId, 
+            ForumEvent::POST_CHANGE, "Posting created with ID: " . $forumPostId, 
+            $eventData);
+         
          AppUtils::sendResponse($forumPostId);
       }
       catch (Exception $e)
@@ -172,7 +204,7 @@ class ForumPostService
     *
     * @see ForumPostServicePDO::updateForumPostEntry()
     */
-   public static function updateForumPostEntry()
+   public static function updateForumPostEntry($forumId, $postId)
    {
       $app = \Slim\Slim::getInstance();
       
@@ -188,6 +220,15 @@ class ForumPostService
          if (isset($post))
          {
             $pdo->updateForumPostEntry($id, $forumPost);
+            $eventData = array(
+               'postId' => $id,
+               'changeType' => ForumEvent::UPDATE
+            );
+            
+            AppUtils::sendEvent(ForumEvent::DOMAIN, $forumId, 
+               ForumEvent::POST_CHANGE, "Posting updated with ID: " . $id, 
+               $eventData);
+            
             AppUtils::sendResponse(
                array(
                   "success" => true,

@@ -176,17 +176,13 @@ class ForumServicePDOTest extends PHPUnit_Framework_TestCase
       PHPUnit_Framework_Assert::assertNotNull($forums[0]['name']);
       
       // All Enrolled Users for a Forum
-      $enrollment = self::$pdo->getForumEnrollment($forumId, true);
+      $enrollment = self::$pdo->getEnrolledUsers($forumId);
       PHPUnit_Framework_Assert::assertGreaterThan(0, count($enrollment));
-      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['forumId']);
-      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['userId']);
-      PHPUnit_Framework_Assert::assertNotNull(
-      $enrollment[0]['enrollmentStatus']);
-      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['forumName']);
+      //AppUtils::logDebug($enrollment[0]);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['id']);
       PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['firstName']);
       PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['lastName']);
       PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['email']);
-      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['lastUpdated']);
       
       // All Users NOT Enrolled for a Forum
       $enrollment = self::$pdo->getForumEnrollment($forumId, false);
@@ -195,16 +191,14 @@ class ForumServicePDOTest extends PHPUnit_Framework_TestCase
       // All Enrolled Users for All Forums (admin function)
       $enrollment = self::$pdo->getAllForumEnrollment();
       PHPUnit_Framework_Assert::assertGreaterThan(0, count($enrollment));
-      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['forumId']);
-      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['userId']);
-      PHPUnit_Framework_Assert::assertNotNull(
-      $enrollment[0]['enrollmentStatus']);
-      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['forumName']);
-      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['firstName']);
-      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['lastName']);
-      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['email']);
-      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['lastUpdated']);
-      
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['enrollmentStatus']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['forum']['id']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['forum']['name']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['user']['id']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['user']['firstName']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['user']['lastName']);
+      PHPUnit_Framework_Assert::assertNotNull($enrollment[0]['user']['email']);
+           
       // Change Enrollment Status User in Forum
       self::$pdo->setForumEnrollmentStatus($forumId, SELF::USER_ID,
          EnrollmentStatus::Joined);

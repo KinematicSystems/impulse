@@ -32,8 +32,10 @@
 require_once 'EventServicePDO.php';
 
 // Slim Framework Route Mappings
-$app->post('/events/:userId/:topic', 'EventService::subscribe');
-$app->delete('/events/:userId/:topic', 'EventService::unsubscribe');
+$app->post('/events/:userId/subscribe', 
+   'EventService::initSubscriptionsForUser');
+// $app->post('/events/:userId/:topic', 'EventService::subscribe');
+// $app->delete('/events/:userId/:topic', 'EventService::unsubscribe');
 $app->get('/events/subscribers', 'EventService::getOnlineUsers');
 $app->get('/events/subscriber/:userId', 'EventService::hasSubscriber');
 $app->get('/events/:userId', 'EventService::popEvents');
@@ -50,7 +52,7 @@ $app->get('/events/:userId/:topic', 'EventService::popTopicEvents');
  */
 class EventService
 {
-   
+
    /**
     *
     * @see EventServicePDO::popTopicEvents()
@@ -108,7 +110,7 @@ class EventService
       {
          $pdo = new EventServicePDO();
          
-         $pdo->subscribe($userId, $topic);
+         $pdo->subscribe($userId, $topic, AppUtils::getSessionId());
          
          AppUtils::sendResponse(
             array(
@@ -122,6 +124,32 @@ class EventService
          AppUtils::sendError($e->getCode(), 
             "Error subscribing to events user $userId topic $topic", 
             $e->getMessage());
+      }
+   }
+
+   /**
+    *
+    * @see EventServicePDO::initSubscriptionsForUser()
+    */
+   public static function initSubscriptionsForUser($userId)
+   {
+      try
+      {
+         $pdo = new EventServicePDO();
+         
+         $pdo->initSubscriptionsForUser($userId);
+         
+         AppUtils::sendResponse(
+            array(
+               "success" => true,
+               "message" => "User $userId subscribed"
+            ));
+      }
+      catch (PDOException $e)
+      {
+         AppUtils::logError($e, __METHOD__);
+         AppUtils::sendError($e->getCode(), 
+            "Error subscribing to events user $userId", $e->getMessage());
       }
    }
 

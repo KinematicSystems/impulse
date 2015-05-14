@@ -35,12 +35,11 @@ require_once 'ForumServicePDO.php';
 // Decided not to allow a path of parent IDs because it precludes the use of
 // urls that have IDs in the middle like /forums/:forumId/log
 // $app->get('/forums/:parentIds+', 'ForumService::getFileNodes');
-$app->get('/forums/:parentId', 'ForumFileService::getFileNodes');
-$app->post('/forums/folder', 'ForumFileService::createFileNode');
-$app->delete('/forums/folder/:forumId/:id', 'ForumFileService::deleteFileNode');
-$app->get('/forums/file/:id', 'ForumFileService::getFileContent');
-$app->delete('/forums/file/:forumId/:id', 'ForumFileService::deleteFileNode');
-$app->put('/forums/file/:id', 'ForumFileService::renameFileNode');
+$app->get('/forum-files/:parentId', 'ForumFileService::getFileNodes');
+$app->post('/forum-files/:parentId', 'ForumFileService::createFileNode');
+$app->delete('/forum-files/forum/:forumId/node/:id', 'ForumFileService::deleteFileNode');
+$app->get('/forum-files/file/:id', 'ForumFileService::getFileContent');
+$app->put('/forum-files/:id', 'ForumFileService::renameFileNode');
 
 
 /**
@@ -90,6 +89,7 @@ class ForumFileService
          // get and decode JSON request body
          $request = $app->request();
          $body = $request->getBody();
+         
          $node = json_decode($body);
          $pdo = new ForumServicePDO();
          $forumId = $node->forumId;
@@ -119,18 +119,24 @@ class ForumFileService
       {
          // get and decode JSON request body
          $request = $app->request();
-         $body = $request->getBody();
-         $params = (array) json_decode($body);
+         $params = $request->params();
+ //        $body = $request->getBody();
+ //        $params = (array) json_decode($body);
          // error_log(print_r($params, true));
          $name = $params['nodeName'];
          $forumId = $params['forumId'];
          $pdo = new ForumServicePDO();
          $newName = $pdo->renameFileNode($id, $name);
-         $params['nodeId'] = $id;
-         $params['changeType'] = ForumEvent::UPDATE;
+          
+         $eventParams = array();
+         $eventParams['changeType'] = ForumEvent::UPDATE;
+         $eventParams['id'] = $id;
+         $eventParams['name'] = $newName;
+         $eventParams['forumId'] = $forumId;
+          
           
          AppUtils::sendEvent(ForumEvent::DOMAIN, $forumId, ForumEvent::NODE_CHANGE, 
-            "Renamed to " . $name, $params);
+            "Renamed to " . $name, $eventParams);
          AppUtils::sendResponse($newName);
       }
       catch (Exception $e)
@@ -200,15 +206,14 @@ class ForumFileService
       $app = \Slim\Slim::getInstance();
       try
       {
-         $params = array(
-            'nodeId' => $id
-         );
          $pdo = new ForumServicePDO();
          $pdo->deleteFileNode($id);
-         $params['changeType'] = ForumEvent::DELETE;
+         $eventParams = array();
+         $eventParams['id'] = $id;
+         $eventParams['changeType'] = ForumEvent::DELETE;
          
          AppUtils::sendEvent(ForumEvent::DOMAIN, $forumId, ForumEvent::NODE_CHANGE, 
-            "Node deleted id: " . $id, $params);
+            "Node deleted id: " . $id, $eventParams);
          
          $app->response()->setStatus(204); // NO DOCUMENT STATUS CODE FOR
                                               // SUCCESS

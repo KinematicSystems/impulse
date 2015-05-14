@@ -50,6 +50,7 @@ class ForumEvent
    const ENROLLMENT = 'FORUM_ENROLLMENT';
    const CHANGE = 'FORUM_CHANGE';
    const NODE_CHANGE = 'FORUM_NODE_CHANGE';
+   const POST_CHANGE = 'FORUM_POST_CHANGE';
 }
 
 /**
@@ -66,5 +67,7 @@ class UserEvent
    const DOMAIN = "USER";
     
    const INVITE = 'USER_INVITE';
+   const REJECTED = 'USER_REJECTED';
+   const JOINED = 'USER_JOINED'; // Sent when a user creates a forum so that they can subscribe to FORUM events  
    const REMOVED = 'USER_REMOVED';
 }
