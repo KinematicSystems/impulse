@@ -17,11 +17,12 @@
 
 <script src="../vendor/angular-inview/angular-inview.js"></script>
 
-<!-- FOR STOMP OVER WEB SOCKETS (3 Files)
-<script src="../vendor/sockjs-client/dist/sockjs.js"></script>
-<script src="../vendor/stomp-websocket/lib/stomp.min.js"></script>
+<!-- FOR STOMP OVER WEB SOCKETS (3 Files) -->
+<script src="../vendor/sockjs-client/dist/sockjs.js"></script> 
+<script src="../vendor/stomp-websocket/lib/stomp.js"></script>
 <script src="core-services/stomp-event-service.js"></script>
--->
+
+ 
 <!-- FOR IMPULSE POLLING EVENT SERVICE (1 File) -->
 <script src="core-services/impulse-event-service.js"></script>
 
@@ -66,6 +67,7 @@
 <link rel="stylesheet" href="settings/settings.css">
 
 <script src="core-services/forum-service.js"></script>
+<script src="core-services/enrollment-service.js"></script>
 <script src="core-services/settings-service.js"></script>
 <script src="topbar/topbar-module.js"></script>
 <script src="map/map-service.js"></script>
@@ -74,7 +76,6 @@
 <script src="forum-explorer/explorer-module.js"></script>
 <script src="forum-post/forumpost-service.js"></script>
 <script src="forum-post/forumpost-module.js"></script>
-<script src="forum-manager/manager-service.js"></script>
 <script src="forum-manager/manager-module.js"></script>
 <script src="settings/settings-module.js"></script>
 <script src="dashboard/dashboard-service.js"></script>
@@ -120,12 +121,14 @@
       </div>
       <div id="workspace">
          <div ng-include="'../common/login/login.tpl.html'" ng-show="currentPage==='login'"></div>
+
          <div ng-include="'dashboard/dashboard.html'" ng-show="currentPage==='dashboard'"></div>
          <div ng-include="'forum-post/forumpost.html'" ng-show="currentPage==='forumpost'"></div>
          <div ng-include="'settings/settings.html'" ng-show="currentPage==='settings'"></div>
          <div ng-include="'forum-manager/manager.html'" ng-show="currentPage==='forumManager'"></div>
          <div ng-include="'map/map.html'" ng-show="currentPage==='map'"></div>
          <div ng-include="'calendar/calendar.html'" ng-show="currentPage==='calendar'"></div>
+         
       </div>
    </div>
 </body>
