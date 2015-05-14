@@ -31,7 +31,7 @@ CREATE TABLE `event_queue` (
   PRIMARY KEY (`id`),
   KEY `fk_subscibers_idx` (`userId`,`topic`),
   CONSTRAINT `fk_subscribers` FOREIGN KEY (`userId`, `topic`) REFERENCES `event_subscriptions` (`userId`, `topic`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=158 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -69,29 +69,6 @@ CREATE TABLE `forum` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `forum_file_metadata`
---
-
-DROP TABLE IF EXISTS `forum_file_metadata`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `forum_file_metadata` (
-  `nodeId` char(36) NOT NULL,
-  `contentType` varchar(255) NOT NULL,
-  `label` varchar(255) DEFAULT NULL,
-  `description` text,
-  `authorId` bigint(20) NOT NULL,
-  `authorName` varchar(255) NOT NULL,
-  `creationDate` datetime NOT NULL,
-  `editorName` varchar(255) DEFAULT NULL,
-  `editedDate` datetime DEFAULT NULL,
-  PRIMARY KEY (`nodeId`),
-  KEY `sourceId` (`nodeId`),
-  CONSTRAINT `forum_file_metadata_ibfk_1` FOREIGN KEY (`nodeId`) REFERENCES `forum_file_node` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `forum_file_node`
 --
 
@@ -101,14 +78,15 @@ DROP TABLE IF EXISTS `forum_file_node`;
 CREATE TABLE `forum_file_node` (
   `id` char(36) NOT NULL,
   `forumId` char(36) NOT NULL,
-  `parentId` char(36) NOT NULL,
+  `parentId` char(36) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `contentType` varchar(255) NOT NULL,
-  `parentIsPost` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `ContentTypeIdx` (`contentType`),
   KEY `forumId` (`forumId`),
-  KEY `folderId` (`parentId`)
+  KEY `folderId` (`parentId`,`forumId`),
+  CONSTRAINT `fk_forumId` FOREIGN KEY (`forumId`) REFERENCES `forum` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_parentId` FOREIGN KEY (`parentId`) REFERENCES `forum_file_node` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -135,7 +113,7 @@ CREATE TABLE `forum_post` (
   KEY `post_parent` (`parentId`),
   KEY `post_author` (`userId`),
   KEY `fk_forum_id_idx` (`forumId`)
-) ENGINE=InnoDB AUTO_INCREMENT=289 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=421 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -156,6 +134,24 @@ CREATE TABLE `forum_user` (
   CONSTRAINT `forum_id` FOREIGN KEY (`forumId`) REFERENCES `forum` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `user_account_id` FOREIGN KEY (`userId`) REFERENCES `user_account` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `post_template`
+--
+
+DROP TABLE IF EXISTS `post_template`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `post_template` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `category` varchar(45) NOT NULL DEFAULT 'General',
+  `content` longtext NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name_UNIQUE` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -277,7 +273,7 @@ CREATE TABLE `user_settings` (
   `domain` varchar(255) NOT NULL,
   `settingKey` varchar(255) NOT NULL,
   `value` text,
-  PRIMARY KEY (`userId`,`settingKey`)
+  PRIMARY KEY (`userId`,`settingKey`,`domain`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -290,4 +286,4 @@ CREATE TABLE `user_settings` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-03-05 13:56:08
+-- Dump completed on 2015-05-13 15:38:43
