@@ -24,8 +24,8 @@
       </ng-form>
    </div>
    <div class="modal-footer">
-      <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button type="button" class="btn btn-primary" ng-click="save()"
+      <button type="button" id="forumCancelButton" class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button type="button" id="forumSaveButton" class="btn btn-primary" ng-click="save()"
          ng-disabled="(forumDialog.$dirty &amp;&amp; forumDialog.$invalid) || forumDialog.$pristine"
          disabled="disabled">OK</button>
    </div>

@@ -1,16 +1,49 @@
 /*
  * This service connects to the impulse custom event service. 
  */
-angular.module('services.EventService', [ 'services.EventService', 'services.ForumService' ]).factory(
+angular.module('services.EventService', [ 'services.EventService', 'services.EnrollmentService' ]).factory(
       'eventService',
-      [ '$http', '$timeout', '$rootScope', '$filter', 'forumService', 'ENROLLMENT_STATUS',
-            function($http, $timeout, $rootScope, $filter, forumService, ENROLLMENT_STATUS) {
+      [ '$http', '$timeout', '$rootScope', '$filter', 'enrollmentService', 'ENROLLMENT_STATUS',
+            function($http, $timeout, $rootScope, $filter, enrollmentService, ENROLLMENT_STATUS) {
                var isConnected = false;
                var isPolling = false;
                var apiUrl = '../api/events/';
-               var debugMode = false;
-               var pollingInterval = 3000;
-               var forumList = [];
+               var debugMode = true;
+               //var forumList = [];
+
+               /*
+                * Polling Interval Management
+                * 
+                * Poll at pollingInterval for POLL_CYCLES then increment by POLL_INCREMENT
+                * If an event occurs reset pollingInterval and pollingCycle
+                * 
+                */
+               var POLL_MIN_INTERVAL = 2000;
+               var POLL_MAX_INTERVAL = 10000;
+               var POLL_INCREMENT = 2000;
+               var POLL_CYCLES = 3;
+
+               var pollingInterval = POLL_MIN_INTERVAL;
+               var pollingCycle = 0;
+
+               function resetPolling() {
+                  // Reset Polling
+                  pollingInterval = POLL_MIN_INTERVAL;
+                  pollingCycle = 0;
+               }
+
+               function updatePolling() {
+                  pollingCycle++;
+                  if (pollingCycle === POLL_CYCLES)
+                  {
+                     pollingCycle = 0;
+                     if (pollingInterval < POLL_MAX_INTERVAL)
+                     {
+                        pollingInterval += POLL_INCREMENT;
+                     }
+                  }
+               }
+
                /*
                 * A quick explaination of the eventing (mattg)
                 * There is a topic for this user.
@@ -20,11 +53,14 @@ angular.module('services.EventService', [ 'services.EventService', 'services.For
                 * will come in on 'topic/joex' but the type will be used for eventing ('USER_INVITE', 'USER_MESSAGE')
                 */
                function onUserEvent(event) {
+                  resetPolling();
                   var content = JSON.parse(event.content);
                   $rootScope.$broadcast(content.type, event.sourceUserId, content);
+
                }
 
                function onForumEvent(event) {
+                  resetPolling();
                   var content = JSON.parse(event.content);
                   $rootScope.$broadcast(content.type, event.sourceUserId, content);
                }
@@ -36,7 +72,18 @@ angular.module('services.EventService', [ 'services.EventService', 'services.For
                   }
                }
 
-               function subscribe(userId, topic) {
+               function initSubscriptions(userId) {
+                  return $http({
+                     method: 'POST',
+                     data: {
+                        userId: userId
+                     },
+                     url: apiUrl + userId + '/subscribe'
+                  });
+               }
+
+               function subscribeForum(userId, forumId) {
+                  var topic = "FORUM." + forumId;
                   return $http({
                      method: 'POST',
                      data: {
@@ -47,7 +94,8 @@ angular.module('services.EventService', [ 'services.EventService', 'services.For
                   });
                }
 
-               function unsubscribe(userId, topic) {
+               function unsubscribeForum(userId, forumId) {
+                  var topic = "FORUM." + forumId;
                   return $http({
                      method: 'DELETE',
                      url: apiUrl + userId + '/' + topic
@@ -55,33 +103,42 @@ angular.module('services.EventService', [ 'services.EventService', 'services.For
                }
 
                function pullEvents(userId) {
-                  $http({
-                     method: 'GET',
-                     url: apiUrl + userId
-                  }).success(function(data, status) {
-                     for (var i = 0; i < data.length; ++i)
-                     {
-                        var event = data[i];
+                  if (isConnected)
+                  {
+                     $http({
+                        method: 'GET',
+                        url: apiUrl + userId
+                     }).success(function(data, status) {
+                        for (var i = 0; i < data.length; ++i)
+                        {
+                           var event = data[i];
 
-                        if (event.topic.indexOf('USER.') === 0)
-                        {
-                           onUserEvent(event);
-                           logDebug(event);
+                           if (event.topic.indexOf('USER.') === 0)
+                           {
+                              onUserEvent(event);
+                              logDebug(event);
+                           }
+                           else if (event.topic.indexOf('FORUM.') === 0)
+                           {
+                              onForumEvent(event);
+                              logDebug(event);
+                           }
                         }
-                        else if (event.topic.indexOf('FORUM.') === 0)
-                        {
-                           onForumEvent(event);
-                           logDebug(event);
-                        }
-                     }
-                  });
+                     }).error(function(data, status) {
+                        isConnected = false;
+                        isPolling = false;
+                     });
+                  }
                }
 
                var poll = function(userId) {
+                  pullEvents(userId);
                   $timeout(function() {
-                     if (isConnected && isPolling)
+                     if (isPolling)
                      {
-                        pullEvents(userId);
+                        updatePolling();
+                        d = new Date();
+                        //logDebug("Polling at " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds());
                         poll(userId);
                      }
                   }, pollingInterval);
@@ -101,18 +158,19 @@ angular.module('services.EventService', [ 'services.EventService', 'services.For
 
                      isConnected = true;
                      logDebug("Connected to imPulse event service");
-                     subscribe(userId, 'USER.' + userId);
-                     forumService.getJoinedForums().success(function(data, status) {
-                        // Filter list for only Joined status
-                        forumList = data;
-                        for (var i = 0; i < forumList.length; ++i)
-                        {
-                           subscribe(userId, 'FORUM.' + forumList[i].id);
-                        }
-                     });
+                     initSubscriptions(userId);
                   },
 
+                  subscribeToForum: function(userId, forumId) {
+                     subscribeForum(userId,forumId);
+                   },
+
+                  unsubscribeFromForum: function(userId, forumId) {
+                     unsubscribeForum(userId,forumId);
+                  },
+                  
                   setPolling: function(userId, bPoll) {
+                     resetPolling();
                      isPolling = bPoll;
                      if (isPolling)
                      {

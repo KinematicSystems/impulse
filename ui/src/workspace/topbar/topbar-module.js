@@ -14,7 +14,7 @@ angular
                   'loginService',
                   function($rootScope, $scope, $filter, toastr, LOGIN_EVENTS, COLLAB_EVENTS, ENROLLMENT_STATUS, impulseService,
                         loginService) {
-                     $scope.userId = impulseService.getCurrentUser();
+                     $scope.userId = impulseService.getCurrentUserId();
                      $scope.isCollaborator = impulseService.isCollaborator();
                      $scope.statCounts = [ 22, 0, 0, 14, 0, 12, 0 ]; // for demo of top status badges
                      $scope.messageCount = 0;
@@ -51,7 +51,7 @@ angular
                            .$on(
                                  COLLAB_EVENTS.USER.INVITE,
                                  function(event, sourceUserId, collabEvent) {
-                                    var msg = "You have been invited to the forum '" + collabEvent.params.forumName + "' by " + collabEvent.params.sourceUserId;
+                                    var msg = "You have been invited to the forum '" + collabEvent.params.forumName + "' by " + sourceUserId;
                                     toastr.info(msg, 'Forum Invitation', {
                                        closeButton: true,
                                        positionClass: 'toast-bottom-right'

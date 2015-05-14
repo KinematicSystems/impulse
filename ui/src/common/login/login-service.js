@@ -14,13 +14,13 @@ angular.module('services.LoginService', [ 'services.ImpulseService' ]).factory(
 
                var clearUser = function(eventID, msg) {
                   $window.sessionStorage.removeItem("userInfo");
-                  impulseService.setCurrentUser(null);
+                  impulseService.setCurrentUserId(null);
                   $rootScope.$broadcast(eventID, msg);
                };
 
-               var setUser = function(userInfo, eventID) {
+               var setUser = function(userInfo) {
                   $window.sessionStorage.setItem("userInfo", JSON.stringify(userInfo));
-                  impulseService.setCurrentUser(userInfo.userId);
+                  impulseService.setCurrentUserId(userInfo.userId);
                   impulseService.setCollaborator((userInfo.accessLevel === 'sysuser'));
                   $rootScope.$broadcast(LOGIN_EVENTS.LOGIN_SUCCESS, userInfo);
                };
@@ -41,7 +41,7 @@ angular.module('services.LoginService', [ 'services.ImpulseService' ]).factory(
                         }).success(function(data, status) {
                            if (status === 200)
                            {
-                              setUser(storedUser, LOGIN_EVENTS.LOGIN_SUCCESS);
+                              setUser(storedUser);
                            }
                            else
                            {
@@ -60,14 +60,14 @@ angular.module('services.LoginService', [ 'services.ImpulseService' ]).factory(
                            password: password
                         },
                         url: apiUrl + 'login'
-                     }).success(function(data, status) {
+                     }).success(function(userInfo, status) {
                         if (status === 200)
                         {
-                           var userInfo = {
-                              userId: userId,
-                              accessLevel: data
-                           };
-                           setUser(userInfo, LOGIN_EVENTS.LOGIN_SUCCESS);
+//                           var userInfo = {
+//                              userId: userId,
+//                              accessLevel: data
+//                           };
+                           setUser(userInfo);
                         }
                         else
                         {

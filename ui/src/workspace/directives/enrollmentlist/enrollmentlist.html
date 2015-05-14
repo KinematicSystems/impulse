@@ -5,41 +5,46 @@
       class="panel panel-default active">
       <div class="item-header">
          {{enrollItem.lastUpdated | formatDbDate}}
-         <span ng-if="enrollmentStatus == 'I'"style="float: right">
-            <a class="btn-xs btn-success" href=""
-               ng-click="acceptEnrollment(enrollItem.forumId, enrollItem.userId)">accept</a>
-            <a class="btn-xs btn-warning" href=""
-               ng-click="rejectEnrollment(enrollItem.forumId, enrollItem.userId)">decline</a>
-          </span>
-         <span ng-if="enrollmentStatus == 'P'"style="float: right">
-            <a class="btn-xs btn-success" href=""
-               ng-click="acceptEnrollment(enrollItem.forumId, enrollItem.updateUserId)">approve</a>
-            <a class="btn-xs btn-warning" href=""
-               ng-click="rejectEnrollment(enrollItem.forumId, enrollItem.updateUserId)">reject</a>
+         <span ng-if="enrollmentStatus == 'I'" style="float: right">
+            <a class="btn-xs btn-success" href="" ng-click="acceptInvite(enrollItem.forum.id, enrollItem.user.id)">accept</a>
+            <a class="btn-xs btn-warning" href="" ng-click="declineInvite(enrollItem.forum.id, enrollItem.user.id)">decline</a>
          </span>
-         <span ng-if="enrollmentStatus == 'J'"style="float: right">
+         <span ng-if="enrollmentStatus == 'P'" style="float: right">
             <a class="btn-xs btn-success" href=""
-               ng-click="inviteForum(enrollItem.id, enrollItem.name)">invite</a>
+               ng-click="approveJoinRequest(enrollItem.forum.id, enrollItem.user.id)">approve</a>
             <a class="btn-xs btn-warning" href=""
-               ng-click="leaveForum(enrollItem.id, enrollItem.name)">leave</a>
-            <a class="btn-xs btn-primary" href=""
-               ng-click="editForum(enrollItem)">edit</a>
-            <a class="btn-xs btn-danger" href=""
-               ng-click="deleteForum(enrollItem.id, enrollItem.name)">delete</a>
+               ng-click="rejectJoinRequest(enrollItem.forum.id, enrollItem.user.id)">reject</a>
+         </span>
+         <span ng-if="enrollmentStatus == 'J'" style="float: right">
+            <a class="btn-xs btn-success" href="" ng-click="inviteForum(enrollItem.forum.id, enrollItem.forum.name)">invite</a>
+            <a class="btn-xs btn-warning" href="" ng-click="leaveForum(enrollItem.forum.id, enrollItem.forum.name)">leave</a>
+            <a class="btn-xs btn-primary" href="" ng-click="editForum(enrollItem.forum)">edit</a>
+            <a class="btn-xs btn-danger" href="" ng-click="deleteForum(enrollItem.forum.id, enrollItem.forum.name)">delete</a>
+         </span>
+         <span ng-if="enrollmentStatus == 'R'" style="float: right">
+            <a class="btn-xs btn-warning" href="" ng-click="removeRejection(enrollItem.forum.id, enrollItem.user.id)">remove</a>
          </span>
       </div>
       <div class="panel-body">
          <span ng-if="enrollmentStatus == 'I'">
             <span user-link userid="enrollItem.updateUserId"></span>
-            invited you to forum <b>{{enrollItem.forumName}}</b>
+            invited you to forum <b class='enrollmentListForumName'>{{enrollItem.forum.name}}</b>
          </span>
          <span ng-if="enrollmentStatus == 'P'">
-            <span user-link userid="enrollItem.userId"></span>
-            has requested to join forum <b>{{enrollItem.forumName}}</b>
+            <span user-link userid="enrollItem.user.id"></span>
+            has requested to join forum <b class='enrollmentListForumName'>{{enrollItem.forum.name}}</b>
          </span>
          <span ng-if="enrollmentStatus == 'J'">
-            <b>{{enrollItem.name}}</b> created by <span user-link userid="enrollItem.owner"></span><br>
-            <p><em>{{enrollItem.description}}</em></p>
+            <b class='enrollmentListForumName'>{{enrollItem.forum.name}}</b> created by
+            <span user-link userid="enrollItem.forum.owner"></span>
+            <br>
+            <p>
+               <em class="enrollmentListDescription">{{enrollItem.forum.description}}</em>
+            </p>
+         </span>
+         <span ng-if="enrollmentStatus == 'R'">
+            <span user-link userid="enrollItem.updateUserId"></span>
+            has rejected your request to join forum <b class='enrollmentListForumName'>{{enrollItem.forum.name}}</b>
          </span>
       </div>
    </div>

@@ -1,5 +1,8 @@
 angular
-      .module('forumManagerModule', [ 'dialogs.main', 'services.ForumManagerService', 'services.ImpulseService', 'services.ForumService' ])
+      .module(
+            'forumManagerModule',
+            [ 'dialogs.main', 'services.ImpulseService', 'services.ForumService',
+                  'services.EnrollmentService', 'services.EventService' ])
 
       .controller(
             'ForumManagerController',
@@ -10,27 +13,34 @@ angular
                   'COLLAB_EVENTS',
                   'ENROLLMENT_STATUS',
                   'impulseService',
-                  'forumManagerService',
                   'forumService',
-                  function($scope, dialogs, LOGIN_EVENTS, COLLAB_EVENTS, ENROLLMENT_STATUS, impulseService, forumManagerService,
-                        forumService) {
-                     var currentUser = impulseService.getCurrentUser();
+                  'enrollmentService',
+                  'eventService',
+                  function($scope, dialogs, LOGIN_EVENTS, COLLAB_EVENTS, ENROLLMENT_STATUS, impulseService, 
+                        forumService, enrollmentService, eventService) {
+                     var currentUserId = impulseService.getCurrentUserId();
                      $scope.editMode = 'M';
                      $scope.headingText = '';
                      $scope.inviteList = [];
                      $scope.inviteForumId = '';
+                     $scope.inviteCount = {
+                        count: ""
+                     };
+                     $scope.pendingCount = {
+                        count: ""
+                     };
+                     $scope.rejectionCount = {
+                        count: ""
+                     };
+                     $scope.forumCount = {
+                        count: ""
+                     };
 
                      $scope.$on(LOGIN_EVENTS.LOGIN_SUCCESS, function(event, params) {
-                        currentUser = params;
+                        currentUserId = params.userId;
                      });
 
                      $scope.$on(LOGIN_EVENTS.LOGOUT_SUCCESS, function(event, params) {
-                     });
-
-                     $scope.$on(COLLAB_EVENTS.USER.REMOVED, function(event, sourceUserId, collabEvent) {
-                     });
-
-                     $scope.$on(COLLAB_EVENTS.FORUM.ENROLLMENT, function(event, sourceUserId, collabEvent) {
                      });
 
                      $scope.enrollmentString = function(statusCode) {
@@ -83,8 +93,9 @@ angular
 
                            if (!forum)
                            {
-                              forumService.createForum(forumData.name, forumData.description, currentUser.userId).success(
-                                    function(forum, status) {
+                              forumService.createForum(forumData.name, forumData.description, currentUserId).success(
+                                    function(forumId, status) {
+                                       eventService.subscribeToForum(currentUserId, forumId);
                                        impulseService.showNotification("Forum Created", "'" + forumData.name + "' successfully created.");
                                     });
                            }
@@ -92,7 +103,7 @@ angular
                            {
                               forum.name = forumData.name;
                               forum.description = forumData.description;
-                              forumService.updateForum(forum, currentUser.userId).success(function(forum, status) {
+                              forumService.updateForum(forum, currentUserId).success(function(forum, status) {
                                  impulseService.showNotification("Forum Updated", "'" + forumData.name + "' successfully updated.");
                               });
                            }
@@ -109,6 +120,7 @@ angular
                         dlg.result.then(function(btn) {
                            // Yes
                            forumService.deleteForum(forumId).success(function(data, status) {
+                              eventService.unsubscribeFromForum(currentUserId, forumId);
                               impulseService.showNotification("Forum Deleted", "'" + forumName + "' successfully deleted.");
                            });
                         }, function(btn) {
@@ -117,7 +129,7 @@ angular
                      };
 
                      function getInviteList() {
-                        forumService.getForumUsers($scope.inviteForumId, false).success(function(data, status) {
+                        enrollmentService.getUsersForInvite($scope.inviteForumId).success(function(data, status) {
                            $scope.inviteList = data;
                         });
                      }
@@ -130,7 +142,7 @@ angular
                      };
 
                      $scope.inviteUser = function(user) {
-                        forumService.setForumEnrollment($scope.inviteForumId, user.userId, ENROLLMENT_STATUS.INVITED).success(
+                        enrollmentService.setForumEnrollment($scope.inviteForumId, user.id, ENROLLMENT_STATUS.INVITED).success(
                               function(data, status) {
                                  getInviteList();
                               });
@@ -142,7 +154,7 @@ angular
                         var dlg = impulseService.showConfirm("Confirm Leave", msg);
                         dlg.result.then(function(btn) {
                            // Yes
-                           forumService.setForumEnrollment(forumId, currentUser.userId, ENROLLMENT_STATUS.LEFT);
+                           enrollmentService.leaveForum(forumId, currentUserId);
                         }, function(btn) {
                            // No (Do Nothing)
                         });
@@ -177,46 +189,3 @@ angular
             }) // end controller(createForumDialogCtrl)
 ;
 
-/*
-      .controller('inviteForumDialogCtrl', function($scope, $modalInstance, forumService, ENROLLMENT_STATUS, data) {
-         var forumId = data.forumId;
-         $scope.dialogHeading = "Invite to forum '" + data.forumName + "'";
-         $scope.userList = [];
-
-         function getUserList() {
-            forumService.getForumUsers(forumId, false).success(function(data, status) {
-               $scope.userList = data;
-            });
-         }
-
-         $scope.inviteUser = function(user) {
-            //alert("Invite User: " + user.userId);
-            forumService.setForumEnrollment(forumId, user.userId, ENROLLMENT_STATUS.INVITED).success(
-                  function(data, status) {
-                     getUserList(forumId);
-                  });
-         };
-         
-         $scope.cancel = function() {
-            $modalInstance.dismiss('Canceled');
-         }; // end cancel
-
-         getUserList();
-      }) // end controller(createForumDialogCtrl)
-
-                     $scope.inviteForum = function(forumId, forumName) {
-                         var params = {
-                           forumId: forumId,
-                           forumName: forumName
-                        };
-
-                        var dlg = dialogs.create('./forum-manager/forum-invite-dialog.html', 'inviteForumDialogCtrl', params, {
-                           size: 'md'
-                        });
-
-                        dlg.result.then(function(forumData) {
-                        }, function() {
-                           // Canceled
-                        });
-                     };
-*/

@@ -31,9 +31,9 @@
 <div class="panel panel-default login-panel" ng-controller="LoginController">
    <div class="panel-body" role="form">
       <div class="error" ng-show="loginError != undefined">
-         <small class="error">{{loginError}}</small>
+         <small id='loginErrorMsg' class="error">{{loginError}}</small>
       </div>
-      <form name="userForm" role="form" class="login-form" novalidate>
+      <form name="userForm" ng-submit="userLogin()" role="form" class="login-form" novalidate>
          <div class="form-group">
             <label>ID</label>
             <input name="id" ng-model="userId" ng-minlength="5" required type="text" class="form-control"
@@ -47,10 +47,10 @@
             <label>Password</label>
             <input ng-model="password" type="password" class="form-control" />
          </div>
-      </form>
       <div style="text-align: right">
-         <button class="btn btn-success" ng-click="userLogin()">Login</button>
+         <input type="submit"  id='loginButton' class="btn btn-success" ng-click="userLogin()" value="Login"></input>
          <!-- <button class="btn btn-primary" ng-click="cancelLogin()">Cancel</button> -->
       </div>
+      </form>
    </div>
 </div>

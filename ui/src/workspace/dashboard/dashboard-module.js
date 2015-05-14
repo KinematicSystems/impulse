@@ -5,10 +5,12 @@ angular.module('dashboardModule', [ 'services.DashboardService', 'services.Impul
       [ '$scope', '$filter', 'LOGIN_EVENTS', 'COLLAB_EVENTS', 'impulseService', 'dashboardService', 
             function($scope, $filter, LOGIN_EVENTS, COLLAB_EVENTS, impulseService, dashboardService) {
                $scope.pageTitle = 'Dashboard';
-               $scope.userId = impulseService.getCurrentUser();
                $scope.messages = [];
                $scope.alerts = [];
-
+               $scope.userId = null;
+               
+               $scope.userId = impulseService.getCurrentUserId();
+                
                $scope.alerts.push({
                   type: 'success',
                   msg: "This message is to demonstrate success."

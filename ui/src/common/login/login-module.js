@@ -11,7 +11,10 @@ angular.module('loginModule', [ 'services.LoginService', 'services.ImpulseServic
 				$scope.loginError = undefined;
 		      $scope.userId = "";
 		      $scope.password = "";
-		      $scope.userForm.$setPristine();
+		      if (typeof $scope.userForm !== "undefined")
+		      {   
+		         $scope.userForm.$setPristine();
+		      }
 		});    
 
 	    $scope.$on(LOGIN_EVENTS.LOGIN_FAILED, function(event, params) {

@@ -25,10 +25,10 @@
          </td>
       </tr>
       <tr ng-hide="group.$hideRows" ng-repeat="item in group.data">
-         <td ng-show="groupBy !== 'lastName'" data-title="'User ID'">{{item.userId}}</td>
-         <td ng-show="groupBy !== 'lastName'" data-title="'User Name'">{{item.firstName}} {{item.lastName}}</td>
-         <td data-title="'eMail'">{{item.email}}</td>
-         <td ng-show="groupBy !== 'forumName'" data-title="'Forum Name'">{{item.forumName}}</td>
+         <td ng-show="groupBy !== 'lastName'" data-title="'User ID'">{{item.user.id}}</td>
+         <td ng-show="groupBy !== 'lastName'" data-title="'User Name'">{{item.user.firstName}} {{item.user.lastName}}</td>
+         <td data-title="'eMail'">{{item.user.email}}</td>
+         <td ng-show="groupBy !== 'forumName'" data-title="'Forum Name'">{{item.forum.name}}</td>
          <td data-title="'Status'">{{enrollmentString(item.enrollmentStatus)}}</td>
          <td data-title="'Last Updated'">{{item.lastUpdated}}</td>
       </tr>

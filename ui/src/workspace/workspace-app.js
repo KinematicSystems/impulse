@@ -27,7 +27,11 @@ angular.module(
 
                $scope.sidebarCollapsed = false;
                $scope.forumExplorerVisible = false;
-               $scope.userId = impulseService.getCurrentUser();
+               var currentUserId = impulseService.getCurrentUserId();
+               if (currentUserId)
+               {
+                  $scope.userId = currentUserId;
+               }   
                $scope.currentPage = 'AllHidden';
                $scope.isPolling = false;
                $scope.isCollaborator = false;
@@ -64,6 +68,8 @@ angular.module(
                //               });
 
                $scope.$on(LOGIN_EVENTS.NOT_AUTHENTICATED, function(event, params) {
+                  $scope.isPolling = false;
+                  eventService.setPolling($scope.userId, $scope.isPolling);
                   $scope.currentPage = 'login';
                   $scope.forumExplorerVisible = false;
                   $scope.isCollaborator = false;
@@ -78,6 +84,8 @@ angular.module(
                $scope.$on(LOGIN_EVENTS.LOGIN_SUCCESS, function(event, params) {
                   $scope.userId = params.userId;
                   initForUser($scope.userId);
+                  $scope.isPolling = true;
+                  eventService.setPolling($scope.userId, $scope.isPolling);
                });
 
                $scope.$on(LOGIN_EVENTS.LOGOUT_SUCCESS, function(event, params) {

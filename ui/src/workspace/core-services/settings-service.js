@@ -25,20 +25,20 @@ angular.module('services.SettingsService',[]).factory('settingsService', ['$http
       setSetting: function(userId,domain,key,value) {
          return $http({
             method: 'PUT',
-            data: {
+            params: {
                settingValue: value
             },
             url: apiUrl + userId + '/' + apiSection + '/' + domain + '/' + key
          });
-      }, 
-      changePassword: function(oldPassword,newPassword) {
+      },
+      changePassword: function(userId,oldPassword,newPassword) {
          return $http({
             method: 'PUT',
-            data: {
+            params: {
                oldPassword: oldPassword,
                newPassword: newPassword
             },
-            url: apiUrl + 'password'
+            url: apiUrl + userId + '/password'
          });
       } 
    };

@@ -1,7 +1,7 @@
 <div ng-controller="TopbarController">
 <span class="topBarLogo"></span>
 <span ng-if="userId" class="loginBlock">
-   <a href="" ng-click="logout()">{{userId}}</a>
+   <a id="logoutLink" href="" ng-click="logout()">{{userId}}</a>
 </span>
 <span ng-if="isCollaborator" class="badgeBlock">
    <span ng-class="{ 'badgeOn': messageCount }" class="glyphicon glyphicon-cog"></span>

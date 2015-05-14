@@ -1,14 +1,14 @@
-angular.module('forumpostModule', [ 'services.ForumService', 'services.ForumPostService', 'services.ImpulseService' ])
+angular.module('forumpostModule', [ 'services.EnrollmentService', 'services.ForumPostService', 'services.ImpulseService' ])
 
 .controller(
       'ForumPostController',
-      [ '$scope', 'LOGIN_EVENTS', 'COLLAB_EVENTS', 'ENROLLMENT_STATUS', 'forumService', 'forumpostService', 'impulseService',
-            function($scope, LOGIN_EVENTS, COLLAB_EVENTS, ENROLLMENT_STATUS, forumService, forumpostService, impulseService) {
+      [ '$scope', 'LOGIN_EVENTS', 'COLLAB_EVENTS', 'ENROLLMENT_STATUS', 'enrollmentService', 'forumpostService', 'impulseService',
+            function($scope, LOGIN_EVENTS, COLLAB_EVENTS, ENROLLMENT_STATUS, enrollmentService, forumpostService, impulseService) {
                $scope.postList = [];
                $scope.forumList = [];
                $scope.viewMode = 'O'; // [O]verview [P]ost view [E]dit post
-               $scope.currentForumName = "";
-               $scope.currentForumId = "";
+               $scope.currentForum = {};
+               $scope.isCollaborator = impulseService.isCollaborator();
                $scope.headingText = 'Forum Posts';
                $scope.post = {
                   id: '',
@@ -17,7 +17,7 @@ angular.module('forumpostModule', [ 'services.ForumService', 'services.ForumPost
                };
 
                $scope.orderBy = "postingDate";
-               var currentUserId = impulseService.getCurrentUser();
+               var currentUserId = impulseService.getCurrentUserId();
 
                function loadPosts(forumId) {
                   forumpostService.getForumPosts(forumId).success(function(data, status) {
@@ -38,12 +38,15 @@ angular.module('forumpostModule', [ 'services.ForumService', 'services.ForumPost
                }
 
                $scope.$on(LOGIN_EVENTS.LOGIN_SUCCESS, function(event, params) {
+                  $scope.isCollaborator = impulseService.isCollaborator();
+                  currentUserId = params.userId;
                   loadForums();
                });
 
                $scope.$on(LOGIN_EVENTS.LOGOUT_SUCCESS, function(event, params) {
                   $scope.postList = [];
                   $scope.forumList = [];
+                  $scope.isCollaborator = false;
                });
 
                $scope.$on(COLLAB_EVENTS.USER.REMOVED, function(event, sourceUserId, collabEvent) {
@@ -65,6 +68,19 @@ angular.module('forumpostModule', [ 'services.ForumService', 'services.ForumPost
                   //                }
                });
 
+               $scope.closePostEditor = function() {
+                  var msg = "Are you sure you want exit the post editor?";
+
+                  var dlg = impulseService.showConfirm("Confirm Exit", msg);
+
+                  dlg.result.then(function(btn) {
+                     // Yes
+                     $scope.setViewMode('O');
+                  }, function(btn) {
+                     // No (Do Nothing)
+                  });
+               };
+               
                $scope.setViewMode = function(val) {
                   $scope.viewMode = val;
                   if ($scope.viewMode === 'O')
@@ -81,40 +97,37 @@ angular.module('forumpostModule', [ 'services.ForumService', 'services.ForumPost
                   }
                };
 
-               $scope.showPosts = function(forumId, forumName) {
-                  $scope.currentForumName = forumName;
-                  $scope.currentForumId = forumId;
+               $scope.showPosts = function(forum) {
+                  $scope.currentForum = forum;
                   $scope.viewMode = 'P';
-                  $scope.headingText = forumName + " Postings";
-                  loadPosts(forumId);
+                  $scope.headingText = forum.name + " Postings";
+                  loadPosts(forum.id);
                };
 
                $scope.newPost = function() {
                   $scope.viewMode = 'E';
-                  $scope.headingText = $scope.currentForumName + " - Create New Post";
+                  $scope.headingText = $scope.currentForum.name + " - Create New Post";
                   $scope.post = {
                      id: '',
                      title: '',
                      content: '',
-                     forumId: $scope.currentForumId,
+                     forumId: $scope.currentForum.id,
                      contentType: 'text/html'
                   };
                };
 
-               $scope.readPost = function(forumId, forumName, postId) {
-                  $scope.currentForumName = forumName;
-                  $scope.currentForumId = forumId;
-                  forumpostService.getPost(forumId, postId).success(function(data, status) {
+               $scope.readPost = function(forum, postId) {
+                  $scope.currentForum = forum;
+                  forumpostService.getPost(forum.id, postId).success(function(data, status) {
                      $scope.postList = [];
                      $scope.postList.push(data);
-                     $scope.headingText = $scope.currentForumName + " - Viewing Single Post";
+                     $scope.headingText = $scope.currentForum.name + " - Viewing Single Post";
                      $scope.viewMode = 'P';
                   });
                };
 
-               $scope.createFirstPost = function(forumId, forumName) {
-                  $scope.currentForumName = forumName;
-                  $scope.currentForumId = forumId;
+               $scope.createFirstPost = function(forum) {
+                  $scope.currentForum = forum;
                   $scope.newPost();
                };
 
@@ -134,14 +147,14 @@ angular.module('forumpostModule', [ 'services.ForumService', 'services.ForumPost
 
                $scope.editPost = function(post) {
                   $scope.viewMode = 'E';
-                  $scope.headingText = $scope.currentForumName + " - Edit Post";
+                  $scope.headingText = $scope.currentForum.name + " - Edit Post";
                   forumpostService.getPost(post.forumId, post.id).success(function(data, status) {
                      $scope.post = data;
                   });
                };
 
                $scope.joinRequest = function(forumId) {
-                  forumService.setForumEnrollment(forumId, currentUserId, ENROLLMENT_STATUS.PENDING).success(function(data, status) {
+                  enrollmentService.setForumEnrollment(forumId, currentUserId, ENROLLMENT_STATUS.PENDING).success(function(data, status) {
                      loadForums();
                   });
                };

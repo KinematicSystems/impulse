@@ -23,6 +23,7 @@ angular.module('settingsModule', [ 'services.SettingsService', 'services.Impulse
       [ '$scope', 'LOGIN_EVENTS', 'settingsService', 'impulseService', function($scope, LOGIN_EVENTS, settingsService, impulseService) {
          $scope.settingsMap = {};
          $scope.passwordData = { oldPassword: '', password: ''};
+         var currentUserId = impulseService.getCurrentUserId();
          
          function loadSettings(userId) {
             settingsService.getSettingsForDomain(userId, 'workspace').success(function(data, status) {
@@ -34,13 +35,14 @@ angular.module('settingsModule', [ 'services.SettingsService', 'services.Impulse
             });
          }
 
-         if (impulseService.getCurrentUser())
+         if (currentUserId)
          {
-            loadSettings(impulseService.getCurrentUser());
+            loadSettings(currentUserId);
          }
 
          $scope.$on(LOGIN_EVENTS.LOGIN_SUCCESS, function(event, params) {
-            loadSettings(params.userId);
+            currentUserId = params.userId;
+            loadSettings(currentUserId);
          });
 
          $scope.$on(LOGIN_EVENTS.LOGOUT_SUCCESS, function(event, params) {
@@ -48,7 +50,6 @@ angular.module('settingsModule', [ 'services.SettingsService', 'services.Impulse
          });
 
          $scope.setBoolean = function(domain, key) {
-            var userId = impulseService.getCurrentUser();
             if ($scope.settingsMap[key] === "true")
             {
                $scope.settingsMap[key] = "false";
@@ -58,18 +59,17 @@ angular.module('settingsModule', [ 'services.SettingsService', 'services.Impulse
                $scope.settingsMap[key] = "true";
             }
 
-            settingsService.setSetting(userId, domain, key, $scope.settingsMap[key]);
+            settingsService.setSetting(currentUserId, domain, key, $scope.settingsMap[key]);
          };
 
          $scope.setString = function(domain, key, value) {
-            var userId = impulseService.getCurrentUser();
-            settingsService.setSetting(userId, domain, key, value);
+             settingsService.setSetting(currentUserId, domain, key, value);
          };
 
          $scope.changePassword = function() {
             if ($scope.userForm.$valid)
             {
-               settingsService.changePassword($scope.passwordData.oldPassword, $scope.passwordData.password)
+               settingsService.changePassword(currentUserId, $scope.passwordData.oldPassword, $scope.passwordData.password)
                .success(function(data, status){
                   impulseService.showNotification("Password Changed", data.message);
                })

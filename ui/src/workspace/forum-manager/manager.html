@@ -1,11 +1,11 @@
 <div id="forumManager" ng-controller="ForumManagerController">
    <div class="moduleHeading">
-      Forum Management
+      <span id="managerHeading">Forum Management</span>
       <span ng-if="editMode != 'M'">{{headingText}}</span>
 
       <span class="controlbar">
-         <button ng-if="editMode == 'M'" class="btn btn-xs btn-primary" ng-click="editForum(null)">New Forum</button>
-         <!--  AngularJS Bug filter wont woek if ng-id is used so use ng-show -->
+         <button ng-if="editMode == 'M'" id="managerNewButton" class="btn btn-xs btn-primary" ng-click="editForum(null)">New Forum</button>
+         <!--  AngularJS Bug filter wont work if ng-id is used so use ng-show -->
          <input ng-show="editMode == 'I'" ng-model="inviteFilter" class="form-control" placeholder="Search">
          <button ng-if="editMode == 'I'" class="btn btn-xs btn-primary" ng-click="changeEditMode('M')">Done</button>
       </span>
@@ -15,16 +15,17 @@
       <div class="container-fluid">
          <div ng-if="editMode == 'M'" style="margin-top: 18px;">
             <div class="col-md-12">
-               <div class="panel panel-default">
+               <div ng-init="invitationsCollapsed = true" class="panel panel-default">
                   <div class="panel-heading">
                      <h3 class="panel-title">
                         <a ng-class="{'collapsed': invitationsCollapsed}"
                            ng-click="invitationsCollapsed = !invitationsCollapsed" href="">Invitations</a>
+                        <span class="badge">{{inviteCount.count}}</span>
                      </h3>
                   </div>
                   <!-- Don't put collapse on panel body, transition is slow/stutters (mattg) -->
                   <div collapse="invitationsCollapsed">
-                     <div enrollment-list enrollment-status="I"></div>
+                     <div enrollment-list enrollment-status="I" enrollment-count="inviteCount"></div>
                   </div>
                </div>
             </div>
@@ -33,27 +34,44 @@
                   <div class="panel-heading">
                      <h3 class="panel-title">
                         <a ng-class="{'collapsed': pendingCollapsed}" ng-click="pendingCollapsed = !pendingCollapsed"
-                           href="">Pending Join Requests</a>
+                           href="">Join requests that I can approve</a>
+                        <span class="badge">{{pendingCount.count}}</span>
                      </h3>
                   </div>
                   <!-- Don't put collapse on panel body, transition is slow/stutters (mattg) -->
                   <div collapse="pendingCollapsed">
-                     <div enrollment-list enrollment-status="P"></div>
+                     <div enrollment-list enrollment-status="P" enrollment-count="pendingCount"></div>
                   </div>
                </div>
             </div>
             <div class="col-md-12">
+               <div ng-init="rejectionsCollapsed = true" class="panel panel-default">
+                  <div class="panel-heading">
+                     <h3 class="panel-title">
+                        <a ng-class="{'collapsed': rejectionsCollapsed}"
+                           ng-click="rejectionsCollapsed = !rejectionsCollapsed" href="">Join requests I made that were rejected</a>
+                        <span class="badge">{{rejectionCount.count}}</span>
+                     </h3>
+                  </div>
+                  <!-- Don't put collapse on panel body, transition is slow/stutters (mattg) -->
+                  <div collapse="rejectionsCollapsed">
+                     <div enrollment-list enrollment-status="R" enrollment-count="rejectionCount"></div>
+                  </div>
+               </div>
+            </div>
+             <div id="managerMyForums" class="col-md-12">
                <div ng-init="forumsCollapsed = false" class="panel panel-default">
                   <div class="panel-heading">
                      <h3 class="panel-title">
                         <a ng-class="{'collapsed': forumsCollapsed}" ng-click="forumsCollapsed = !forumsCollapsed"
                            href=""> My Forums</a>
+                        <span class="badge">{{forumCount.count}}</span>
                      </h3>
                   </div>
                   <!-- Don't put collapse on panel body, transition is slow/stutters (mattg) -->
                   <div collapse="forumsCollapsed">
                      <div enrollment-list on-invite="inviteForum" on-leave="leaveForum" on-edit="editForum"
-                        on-delete="deleteForum" enrollment-status="J"></div>
+                        on-delete="deleteForum" enrollment-status="J" enrollment-count="forumCount"></div>
                   </div>
                </div>
             </div>

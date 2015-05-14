@@ -9,7 +9,7 @@ angular.module('workspaceDirectives')
       },
       controller: function($scope) {
          $scope.linkClicked = function() {
-            alert("Date clicked!");
+            alert("Date clicked: " + $scope.dateVal);
          };
       },
       templateUrl: 'templates/dateLink/dateLink.html',

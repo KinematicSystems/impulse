@@ -15,14 +15,14 @@
     </a>
   </div>
  <div  class="sidebarItem">
-    <a href="" ng-click="$parent.currentPage='dashboard'">
+    <a id="sidebarDashboard" href="" ng-click="$parent.currentPage='dashboard'">
        <span class="glyphicon glyphicon-dashboard" title="Dashboard"></span>
        <span ng-if="!$parent.sidebarCollapsed">Dashboard</span>
     </a>
   </div>
   <div class="sidebarItem">
-    <a href="" ng-click="$parent.currentPage='forumpost'">
-       <span class="glyphicon glyphicon-book" title="Forum Log"></span>
+    <a href="" id="sidebarPost" ng-click="$parent.currentPage='forumpost'">
+       <span class="glyphicon glyphicon-book" title="Forum Post"></span>
        <span ng-if="!$parent.sidebarCollapsed">Forum Posts</span>
     </a>
   </div>
@@ -47,21 +47,21 @@
   </div>
  
   <div class="sidebarItem">
-    <a href="" ng-click="$parent.currentPage='map'">
+    <a id="sidebarMap" href="" ng-click="$parent.currentPage='map'">
       <span class="glyphicon glyphicon-map-marker" title="Map"></span>
       <span ng-if="!$parent.sidebarCollapsed">Map</span>
     </a>
   </div>
   <div style="margin-bottom: 200px;"></div>
   <div  class="sidebarItem">
-    <a href="" ng-click="$parent.currentPage='forumManager'">
+    <a id="sidebarManager" href="" ng-click="$parent.currentPage='forumManager'">
     <!-- TODO Need to figure out how to make font awesome and glyph be the same width fa=15px glyph=17px -->
       <span style="width: 17px;" class="fa fa-group" title="Manage Forums"></span>
       <span ng-if="!$parent.sidebarCollapsed">Manage Forums</span>
     </a>
   </div>
   <div class="sidebarItem">
-    <a href="" ng-click="$parent.currentPage='settings'">
+    <a id="sidebarSettings" href="" ng-click="$parent.currentPage='settings'">
       <span class="glyphicon glyphicon-cog" title="Settings"></span>
       <span ng-if="!$parent.sidebarCollapsed">Settings</span>
     </a>
@@ -74,9 +74,9 @@
   </div>
   <div class="sidebarItem">
     <a href="" ng-click="$parent.togglePolling()">
-      <span class="glyphicon glyphicon-off" title="Polling"></span>
-      <span ng-if="!$parent.sidebarCollapsed && $parent.isPolling">Stop Polling</span>
-      <span ng-if="!$parent.sidebarCollapsed && !$parent.isPolling">Start Polling</span>
+      <span class="glyphicon glyphicon-off" title="Server Events"></span>
+      <span ng-if="!$parent.sidebarCollapsed && $parent.isPolling">Disconnect</span>
+      <span ng-if="!$parent.sidebarCollapsed && !$parent.isPolling">Connect</span>
     </a>
   </div>
  <!-- For debugging login -->

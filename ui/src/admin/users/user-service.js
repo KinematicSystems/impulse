@@ -48,7 +48,7 @@ angular.module('services.UserService',[]).factory('userService', ['$http', funct
 		
 		/* Property Methods */
 		getAllProperties: function() {
-			return runGetRequest('properties');
+			return runGetRequest('user-properties');
 		},
 		
 		getUserProperties: function(userId) {
@@ -59,14 +59,14 @@ angular.module('services.UserService',[]).factory('userService', ['$http', funct
 			return $http({
 				method: 'PUT',
 				data: {},
-				url: apiUrl + 'users/' + userId + '/property/' + propId
+				url: apiUrl + 'users/' + userId + '/properties/' + propId
 			}); 
 		},
 		
 		revokeProperty: function(userId, propId) {
 			return $http({
 				method: 'DELETE',
-				url: apiUrl + 'users/' + userId + '/property/' + propId
+				url: apiUrl + 'users/' + userId + '/properties/' + propId
 			}); 
 		}
 

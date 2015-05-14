@@ -8,10 +8,10 @@
             <option value="postingDate">Posting Date</option>
          </select>
          <input ng-if="viewMode !== 'E'" type="text" class="form-control" placeholder="Search">
-         <button ng-if="viewMode === 'P'" class="btn btn-xs btn-success" ng-click="newPost()">New Post</button>
+         <button ng-if="viewMode === 'P' && isCollaborator && currentForum.isMember" class="btn btn-xs btn-success" ng-click="newPost()">New Post</button>
          <button ng-if="viewMode === 'P'" class="btn btn-xs btn-primary" ng-click="setViewMode('O')">Done</button>
          <button ng-if="viewMode === 'E'" class="btn btn-xs btn-success" ng-click="savePost()">Save</button>
-         <button ng-if="viewMode === 'E'" class="btn btn-xs btn-primary" ng-click="setViewMode('P')">Done</button>
+         <button ng-if="viewMode === 'E'" class="btn btn-xs btn-primary" ng-click="closePostEditor()">Done</button>
       </span>
    </div>
    <div class="moduleContainer">
@@ -21,7 +21,7 @@
             <div ng-repeat="forum in forumList track by $index" class="col-xs-12 col-sm-12 col-md-6 col-lg-4 card">
                <div class="title">
                   <div>
-                     <a href="" ng-click="showPosts(forum.id,forum.name)">{{forum.name}}</a>
+                     <a href="" ng-click="showPosts(forum)">{{forum.name}}</a>
                      <span class="pull-right">
                         <span ng-if="!(forum.isMember)">
                            <a href="" title="Send Join Request" ng-click="joinRequest(forum.id)">
@@ -50,7 +50,7 @@
                </div>
                <div style="display: inline-block;" ng-if="forum.mostRecentPost">
                   <div class="overview-title">
-                     <a class="post-title" ng-click="readPost(forum.id,forum.name,forum.mostRecentPost.id)">{{forum.mostRecentPost.title}}</a>
+                     <a class="post-title" ng-click="readPost(forum,forum.mostRecentPost.id)">{{forum.mostRecentPost.title}}</a>
                      <div class="card-byline">
                         <span user-link userid="forum.mostRecentPost.userId"></span>
                         on
@@ -59,16 +59,16 @@
                   </div>
                   <div class="forum-post" ng-bind-html="forum.mostRecentPost.content"></div>
                   <a ng-if="forum.mostRecentPost.truncated" class="post-link pull-right" href=""
-                     ng-click="readPost(forum.id,forum.name,forum.mostRecentPost.id)"> Read Full Post</a>
+                     ng-click="readPost(forum,forum.mostRecentPost.id)"> Read Full Post</a>
                </div>
                <div ng-if="!forum.mostRecentPost">
                   There are no posts in the forum.<br> <br>
-                  <a class="post-link pull-right" href="" ng-click="createFirstPost(forum.id,forum.name)">Create A
+                  <a class="post-link pull-right" href="" ng-click="createFirstPost(forum)">Create A
                      New Post</a>
                   <br>
                </div>
                <div class="card-footer" ng-repeat="otherPost in forum.otherPosts">
-                  <a class="post-title" href="" ng-click="readPost(forum.id,forum.name,otherPost.id)">{{otherPost.title}}</a>
+                  <a class="post-title" href="" ng-click="readPost(forum,otherPost.id)">{{otherPost.title}}</a>
                   <div class="card-byline">
                      <span user-link userid="otherPost.userId"></span>
                      on
@@ -89,7 +89,7 @@
                      <span class="byline">
                         <span user-link userid="post.userId"></span>
                      </span>
-                     <span class="edit-link">
+                     <span ng-if="isCollaborator && currentForum.isMember" class="edit-link">
                         <a class="post-edit-link" href="" ng-click="editPost(post)">
                            <span class="fa fa-pencil" title="Edit Posting"></span>
                            Edit
@@ -103,7 +103,7 @@
          <!-- ************* POST EDIT MODE ************* -->
          <div ng-if="viewMode === 'E'" class="row">
             <br>
-            <div post-edit post-model="post"></div>
+            <div name='postEditor' post-edit post-model="post"></div>
          </div>
       </div>
    </div>

@@ -4,7 +4,7 @@ angular.module('calendarModule', ['mwl.calendar','services.ImpulseService'])
 		function($scope, LOGIN_EVENTS) {
          $scope.calendarView = 'month';
          $scope.calendarDay = new Date(2015,2,1,1);
-         $scope.calendarControl;
+//         $scope.calendarControl;
 
          $scope.events = [
                           {
@@ -18,7 +18,7 @@ angular.module('calendarModule', ['mwl.calendar','services.ImpulseService'])
                         ];
          
 		    $scope.$on(LOGIN_EVENTS.LOGIN_SUCCESS, function(event, params) {
-		        var userId = params;
+		        var userId = params.userId;
 			});    
 
 		    $scope.$on(LOGIN_EVENTS.LOGOUT_SUCCESS, function(event, params) {

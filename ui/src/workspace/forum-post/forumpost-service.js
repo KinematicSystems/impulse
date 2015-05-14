@@ -1,6 +1,6 @@
 angular.module('services.ForumPostService', []).factory('forumpostService', [ '$http', function($http) {
    var apiUrl = '../api/';
-   var apiSection = 'forums';
+   var apiSection = 'posting';
 
    var runGetRequest = function(method) {
       // Return the promise from the $http service 
@@ -19,23 +19,23 @@ angular.module('services.ForumPostService', []).factory('forumpostService', [ '$
          return runGetRequest(apiSection + '/' + forumId + '/post/' + postId);
       },
       getSummary: function(forumId) {
-         return runGetRequest(apiSection + '/' + forumId + '/post/summary');
+         return runGetRequest(apiSection + '/' + forumId + '/post-summary');
       },
       getOverviews: function() {
-         return runGetRequest(apiSection + '/post/overviews');
+         return runGetRequest('/posting-overviews');
       },
       createPost: function(posting) {
          return $http({
             method: 'POST',
             data: posting,
-            url: apiUrl + apiSection + "/post"
+            url: apiUrl + apiSection + "/" + posting.forumId + "/post"
          });
       },
       updatePost: function(posting) {
          return $http({
             method: 'PUT',
             data: posting,
-            url: apiUrl + apiSection + "/post"
+            url: apiUrl + apiSection + "/" + posting.forumId + "/post/" + posting.id
          });
       }
    };

@@ -1,1 +1,1 @@
-angular.module('workspaceDirectives', [ 'services.ImpulseService', 'services.ForumService', 'textAngular']);
+angular.module('workspaceDirectives', [ 'services.ImpulseService', 'services.EnrollmentService', 'services.EventService', 'textAngular']);

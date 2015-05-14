@@ -21,12 +21,16 @@ angular.module('forumAdminModule', ['services.ForumAdminService', 'services.Impu
 				groupBy: function(item) {
 					if ($scope.groupBy === 'lastName')
 					{	
-						return item.firstName + ' ' + item.lastName + ' (' + item.userId + ')';
+						return item.user.firstName + ' ' + item.user.lastName + ' (' + item.user.id + ')';
 					}
 					else if ($scope.groupBy === 'enrollmentStatus')
 					{
 						return impulseService.enrollmentString(item.enrollmentStatus);
 					}
+               else if ($scope.groupBy === 'forumName')
+               {
+                  return item.forum.name;
+               }
 					else
 					{
 						return item[$scope.groupBy];

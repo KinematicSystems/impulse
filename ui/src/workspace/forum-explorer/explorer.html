@@ -14,12 +14,17 @@
                <span style="font-weight: bold; padding-right: 5px;">{{selectedForum.name}}</span>
                <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu" style="margin: 0;" role="menu">
+            <ul id="explorerForumSelectionList" class="dropdown-menu" style="margin: 0;" role="menu">
                <li ng-repeat="forum in forumList">
                   <a href="" ng-click="changeForum(forum.id,forum.name)">{{forum.name}}</a>
                </li>
             </ul>
          </div>
+        <!-- Back -->
+         <button type="button" ng-disabled="editMode || userMode" class="pull-right btn btn-default btn-sm"
+            ng-click="parentFolder()" title="Browse to parent folder">
+            <span class="fa fa-level-up"></span>
+         </button>
          <!-- Path Jump -->
          <div class="btn-group pull-right" dropdown title="Jump to Folder">
             <button type="button" dropdown-toggle ng-disabled="editMode || userMode" class="btn btn-default btn-sm dropdown-toggle">
@@ -29,16 +34,10 @@
             </button>
             <ul class="dropdown-menu pull-right" style="margin: 0;" role="menu">
                <li ng-repeat="path in pathStack">
-                  <a href="" ng-click="changeNode(path.id,path.name)">{{path.name}}</a>
+                  <a href="" ng-click="changeNode(path.id)">{{path.name}}</a>
                </li>
             </ul>
          </div>
-         <!-- Back -->
-         <button type="button" ng-disabled="editMode || userMode" class="btn btn-default btn-sm"
-            ng-click="parentFolder()" title="Browse to parent folder">
-            <span class="glyphicon glyphicon-chevron-left"></span>
-         </button>
-
       </div>
       <div class="toolRow btn-group">
          <!-- [START] Elements To Displayed In File Mode !userMode -->
@@ -67,16 +66,15 @@
       </div>
       <!-- User List -->
       <ul ng-if="userMode" class="nav nav-stacked user-browser">
-         <li ng-repeat="user in userList" class="active">
+         <li ng-repeat="theUser in userList" class="active">
             <!-- User contains all fields from forum_user, user_account, and forumName -->
             <a href="" ng-click="">
-               <span style="float: left; font-weight: 500;">{{user.firstName + ' ' + user.lastName}}</span>
-               <span user-link userid="user.userId" style="float: right;"></span>
+               <span style="float: left; font-weight: 500;">{{theUser.firstName + ' ' + theUser.lastName}}</span>
+               <span user-link userid="theUser.id" style="float: right;"></span>
                <br>
-               <span style="float: left; color: #888;">{{user.email}}</span>
-               <span ng-if="!inviteMode" style="float: right; color: #888; font-style: italic;">{{enrollmentString(user.enrollmentStatus)}}</span>
+               <span style="float: left; color: #888;">{{theUser.email}}</span>
                <span ng-if="inviteMode" class="glyphicon glyphicon-share" title="Send Invite"
-                  ng-click="inviteUser(user)" style="color: Green; float: right;"></span>
+                  ng-click="inviteUser(theUser)" style="color: Green; float: right;"></span>
             </a>
          </li>
       </ul>

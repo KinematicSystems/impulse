@@ -26,7 +26,7 @@ angular.module('services.ImpulseService', [ 'dialogs.main' ]).factory('impulseSe
       'L': 'Left'
    };
 
-   var currentUser = null;
+   var currentUserId = null;
    var collaborator = false;
 
    // Return the service object functions
@@ -34,11 +34,11 @@ angular.module('services.ImpulseService', [ 'dialogs.main' ]).factory('impulseSe
       enrollmentString: function(statusCode) {
          return enrollmentStatusMap[statusCode];
       },
-      setCurrentUser: function(currUser) {
-         currentUser = currUser;
+      setCurrentUserId: function(currUserId) {
+         currentUserId = currUserId;
       },
-      getCurrentUser: function() {
-         return currentUser;
+      getCurrentUserId: function() {
+         return currentUserId;
       },
       setCollaborator: function(collab) {
          collaborator = collab;
@@ -114,12 +114,15 @@ angular.module('services.ImpulseService', [ 'dialogs.main' ]).factory('impulseSe
       ENROLLMENT: 'FORUM_ENROLLMENT',
       CHANGE: 'FORUM_CHANGE',
       NODE_CHANGE: 'FORUM_NODE_CHANGE',
+      POST_CHANGE: 'FORUM_POST_CHANGE',
       CT_CREATE: 'CREATE', // CT = change type
       CT_UPDATE: 'UPDATE',
       CT_DELETE: 'DELETE',
    },
    USER: {
       INVITE: 'USER_INVITE',
+      JOINED: 'USER_JOINED',
+      REJECTED: 'USER_REJECTED',
       REMOVED: 'USER_REMOVED'
    }
 })

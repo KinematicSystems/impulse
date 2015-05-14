@@ -1,134 +1,218 @@
-angular.module('workspaceDirectives').directive('enrollmentList',
-            ['$document','impulseService','forumService','LOGIN_EVENTS','COLLAB_EVENTS','ENROLLMENT_STATUS',
-function($document, impulseService, forumService, LOGIN_EVENTS, COLLAB_EVENTS, ENROLLMENT_STATUS) {
-   return {
-      restrict: 'A',
-      scope: {
-         enrollmentStatus: '@enrollmentStatus',
-         onInvite: '&',
-         onLeave: '&',
-         onEdit: '&',
-         onDelete: '&'
-      },
-      controller: function($scope) {
-         $scope.enrollmentList = [];
+angular
+      .module('workspaceDirectives')
+      .directive(
+            'enrollmentList',
+            [
+                  'impulseService',
+                  'enrollmentService',
+                  'eventService',
+                  'LOGIN_EVENTS',
+                  'COLLAB_EVENTS',
+                  'ENROLLMENT_STATUS',
+                  function(impulseService, enrollmentService, eventService, LOGIN_EVENTS, COLLAB_EVENTS, ENROLLMENT_STATUS) {
+                     return {
+                        restrict: 'A',
+                        scope: {
+                           enrollmentStatus: '@enrollmentStatus',
+                           enrollmentCount: '=enrollmentCount',
+                           onInvite: '&',
+                           onLeave: '&',
+                           onEdit: '&',
+                           onDelete: '&'
+                        },
+                        controller: function($scope) {
+                           $scope.enrollmentList = [];
 
-         $scope.$on(LOGIN_EVENTS.LOGIN_SUCCESS, function(event, params) {
-            updateList();
-         });
+                           $scope.$on(LOGIN_EVENTS.LOGIN_SUCCESS, function(event, params) {
+                              updateList();
+                           });
 
-         function updateList() {
-            if ($scope.enrollmentStatus === ENROLLMENT_STATUS.INVITED)
-            {
-               loadInvites();
-            }
-            else if ($scope.enrollmentStatus === ENROLLMENT_STATUS.PENDING)
-            {
-               loadJoinRequests();
-            }
-            else if ($scope.enrollmentStatus === ENROLLMENT_STATUS.JOINED)
-            {
-               loadJoinedForums();
-            }
-         }
+                           function updateList() {
+                              if ($scope.enrollmentStatus === ENROLLMENT_STATUS.INVITED)
+                              {
+                                 loadInvites();
+                              }
+                              else if ($scope.enrollmentStatus === ENROLLMENT_STATUS.PENDING)
+                              {
+                                 loadJoinRequests();
+                              }
+                              else if ($scope.enrollmentStatus === ENROLLMENT_STATUS.JOINED)
+                              {
+                                 loadEnrolledForums();
+                              }
+                              else if ($scope.enrollmentStatus === ENROLLMENT_STATUS.REJECTED)
+                              {
+                                 loadRejections();
+                              }
+                           }
 
-         function loadInvites() {
-            forumService.getInvitations().success(function(data, status) {
-               $scope.enrollmentList = data;
-            });
-         }
+                           function setCount(theList) {
+                              if (typeof $scope.enrollmentCount !== "undefined")
+                              {
+                                 // Setting the count to "" instead of zero will cause the badge not to display
+                                 if (theList.length > 0)
+                                 {
+                                    $scope.enrollmentCount.count = theList.length;
+                                 }
+                                 else
+                                 {
+                                    $scope.enrollmentCount.count = "";
+                                 }
+                              }
+                           }
 
-         function loadJoinRequests() {
-            forumService.getPendingJoinRequests().success(function(data, status) {
-               $scope.enrollmentList = data;
-            });
-         }
+                           function loadInvites() {
+                              enrollmentService.getInvitations(impulseService.getCurrentUserId()).success(function(data, status) {
+                                 $scope.enrollmentList = data;
+                                 setCount(data);
+                              });
+                           }
 
-         function loadJoinedForums() {
-            forumService.getJoinedForums().success(function(data, status) {
-               $scope.enrollmentList = data;
-            });
-         }
+                           function loadJoinRequests() {
+                              enrollmentService.getPendingJoinRequests(impulseService.getCurrentUserId()).success(function(data, status) {
+                                 $scope.enrollmentList = data;
+                                 setCount(data);
+                              });
+                           }
 
-         $scope.acceptEnrollment = function(forumId, userId) {
-            var newStatus = "ERROR";
-            if ($scope.enrollmentStatus === ENROLLMENT_STATUS.INVITED)
-            {
-               newStatus = ENROLLMENT_STATUS.ACCEPTED;
-            }
-            else if ($scope.enrollmentStatus === ENROLLMENT_STATUS.PENDING)
-            {
-               newStatus = ENROLLMENT_STATUS.JOINED;
-            }
+                           function loadEnrolledForums() {
+                              enrollmentService.getEnrolled(impulseService.getCurrentUserId()).success(function(data, status) {
+                                 $scope.enrollmentList = data;
+                                 setCount(data);
+                              });
+                           }
 
-            return forumService.setForumEnrollment(forumId, userId, newStatus);
-         };
+                           function loadRejections() {
+                              enrollmentService.getRejections(impulseService.getCurrentUserId()).success(function(data, status) {
+                                 $scope.enrollmentList = data;
+                                 setCount(data);
+                              });
+                           }
 
-         $scope.inviteForum = function(forumId, forumName) {
-            $scope.onInvite()(forumId, forumName);
-         };
+                           $scope.acceptInvite = function(forumId, userId) {
+                              enrollmentService.acceptInvite(forumId, userId).success(function(data, status) {
+                                 // If this is the current user accepting an invite we must subscribe to the
+                                 // forum events.
+                                 eventService.subscribeToForum(userId, forumId);
+                              });
+                           };
 
-         $scope.leaveForum = function(forumId, forumName) {
-            $scope.onLeave()(forumId, forumName);
-         };
+                           $scope.declineInvite = function(forumId, userId) {
+                              enrollmentService.setForumEnrollment(forumId, userId, ENROLLMENT_STATUS.DECLINED).success(
+                                    function(data, status) {
+                                       updateList();
+                                    });
+                           };
 
-         $scope.editForum = function(forum) {
-            $scope.onEdit()(forum);
-         };
+                           $scope.approveJoinRequest = function(forumId, userId) {
+                              enrollmentService.approveJoinRequest(forumId, userId).success(function(data, status) {
+                              });
+                           };
 
-         $scope.deleteForum = function(forumId, forumName) {
-            $scope.onDelete()(forumId, forumName);
-         };
+                           $scope.rejectJoinRequest = function(forumId, userId) {
+                              enrollmentService.setForumEnrollment(forumId, userId, ENROLLMENT_STATUS.REJECTED).success(
+                                    function(data, status) {
+                                       updateList();
+                                  });
+                           };
 
-         $scope.$on(COLLAB_EVENTS.USER.INVITE, function(event, sourceUserId, collabEvent) {
-            loadInvites();//$scope.enrollmentList.push(collabEvent.params);
-         });
+                           $scope.removeRejection = function(forumId, userId) {
+                              enrollmentService.removeRejection(forumId, userId).success(function(data, status) {
+                                 updateList();
+                              });
+                           };
 
-         $scope.$on(COLLAB_EVENTS.FORUM.ENROLLMENT,
-            function(event, sourceUserId, collabEvent) {
-               //TODO get rid of user ID in service, this should work for current user only 
+                           $scope.inviteForum = function(forumId, forumName) {
+                              $scope.onInvite()(forumId, forumName);
+                           };
 
-               if ((collabEvent.params.enrollmentStatus === ENROLLMENT_STATUS.JOINED || collabEvent.params.enrollmentStatus === ENROLLMENT_STATUS.DECLINED) && sourceUserId === impulseService
-                     .getCurrentUser())
-               {
-                  // Remove the invite from the list on server confirmation
-                  for (var i = 0; i < $scope.enrollmentList.length; ++i)
-                  {
-                     if ($scope.enrollmentList[i].forumId === collabEvent.params.forumId)
-                     {
-                        $scope.enrollmentList.splice(i, 1);
-                        break;
-                     }
-                  }
-               }
-            });
+                           $scope.leaveForum = function(forumId, forumName) {
+                              $scope.onLeave()(forumId, forumName);
+                           };
 
-         $scope.$on(COLLAB_EVENTS.FORUM.CHANGE, function(event, sourceUserId, collabEvent) {
-            //TODO Make updates more efficient 
-            if (collabEvent.params.changeType === COLLAB_EVENTS.FORUM.CT_DELETE)
-            {
-               updateList();
-            }
-            else
-            {
-               updateList();
-            }
-         });
+                           $scope.editForum = function(forum) {
+                              $scope.onEdit()(forum);
+                           };
 
-         // Init
-         if (impulseService.getCurrentUser())
-         {   
-            updateList();
-         }
-      },
-      templateUrl: 'directives/enrollmentlist/enrollmentlist.html',
-      //templateUrl: 'templates/enrollmentlist/enrollmentlist.html',
-      link: function(scope, element, attrs) {
-      }
-   };
-} ])
+                           $scope.deleteForum = function(forumId, forumName) {
+                              $scope.onDelete()(forumId, forumName);
+                           };
 
-      .run([ '$templateCache', function($templateCache) {
+                           $scope.$on(COLLAB_EVENTS.USER.INVITE, function(event, sourceUserId, collabEvent) {
+                              if ($scope.enrollmentStatus === ENROLLMENT_STATUS.INVITED)
+                              {
+                                 loadInvites();
+                              }
+                           });
+
+                           $scope.$on(COLLAB_EVENTS.USER.JOINED, function(event, sourceUserId, collabEvent) {
+                              updateList();
+                           });
+
+                           $scope.$on(COLLAB_EVENTS.USER.REJECTED, function(event, sourceUserId, collabEvent) {
+                              updateList();
+                           });
+
+                           $scope.$on(COLLAB_EVENTS.USER.REMOVED, function(event, sourceUserId, collabEvent) {
+                              updateList();
+                           });
+ 
+                           $scope
+                                 .$on(
+                                       COLLAB_EVENTS.FORUM.ENROLLMENT,
+                                       function(event, sourceUserId, collabEvent) {
+                                          var currentUserId = impulseService.getCurrentUserId();
+
+                                          if ((collabEvent.params.enrollmentStatus === ENROLLMENT_STATUS.JOINED || collabEvent.params.enrollmentStatus === ENROLLMENT_STATUS.DECLINED || collabEvent.params.enrollmentStatus) && sourceUserId === currentUserId)
+                                          {
+                                             // Remove the invite from the list on server confirmation
+                                             for (var i = 0; i < $scope.enrollmentList.length; ++i)
+                                             {
+                                                if ($scope.enrollmentList[i].forum.id === collabEvent.params.forumId)
+                                                {
+                                                   $scope.enrollmentList.splice(i, 1);
+                                                   setCount($scope.enrollmentList);
+                                                   break;
+                                                }
+                                             }
+                                          }
+                                          else if (collabEvent.params.enrollmentStatus === ENROLLMENT_STATUS.PENDING && sourceUserId !== currentUserId)
+                                          {
+                                             if ($scope.enrollmentStatus === ENROLLMENT_STATUS.PENDING)
+                                             {
+                                                loadJoinRequests();
+                                             }
+                                          }
+                                       });
+
+                           $scope.$on(COLLAB_EVENTS.FORUM.CHANGE, function(event, sourceUserId, collabEvent) {
+                              //TODO Make updates more efficient? 
+                              if (collabEvent.params.changeType === COLLAB_EVENTS.FORUM.CT_DELETE)
+                              {
+                                 updateList();
+                              }
+                              else
+                              {
+                                 updateList();
+                              }
+                           });
+
+                           $scope.$on(COLLAB_EVENTS.USER.REMOVED, function(event, sourceUserId, collabEvent) {
+                              updateList();
+                           });
+                           
+                           // Init
+                           if (impulseService.getCurrentUserId())
+                           {
+                              updateList();
+                           }
+                        },
+                        templateUrl: 'directives/enrollmentlist/enrollmentlist.html',
+                        //templateUrl: 'templates/enrollmentlist/enrollmentlist.html',
+                        link: function(scope, element, attrs) {
+                        }
+                     };
+                  } ]).run([ '$templateCache', function($templateCache) {
          'use strict';
          // Not used
          $templateCache.put('templates/enrollmentlist/enrollmentlist.html', "<div>{{enrollmentList}}</span>\n");

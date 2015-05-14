@@ -7,18 +7,34 @@
  * http://stackoverflow.com/questions/14481610/two-way-binding-not-working-in-directive-with-transcluded-scope
  * 
  */
-angular.module('workspaceDirectives').directive('postEdit', [ '$document', function($document) {
+angular.module('workspaceDirectives').directive('postEdit', [ '$http', '$document', function($http, $document) {
    return {
       restrict: 'A',
       transclude: false,
       scope: {
-         postModel: "="
+         postModel: "=",
+         isDirty: "="
       },
       controller: function($scope) {
-         function XXX() {
-         }
+         $http({
+            method: 'GET',
+            url: '../api/posting-templates'
+         }).success(function(data, status) {
+            $scope.postTemplates = data;
+         });
 
-         $scope.YYY = function() {
+//         $scope.$watch("postEditForm.postTitle.$dirty", function(newValue) {
+//            if (newValue)
+//            {
+//               $scope.isDirty = $scope.isDirty || newValue;
+//            }
+//         });
+
+         $scope.insertTemplate = function(templateIndex) {
+            // alert("insert template clicked");
+            //var sampleTemplate = "<h2>This is some sample text:</h2><p><b>Bold &nbsp;</b><i>Italics &nbsp;</i><u>Underline</u></p>";
+            //$scope.postModel.content += sampleTemplate;
+            $scope.postModel.content += $scope.postTemplates[templateIndex].content;
          };
       },
       templateUrl: 'directives/postedit/postedit.html',
