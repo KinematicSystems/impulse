@@ -68,6 +68,10 @@ angular.module('forumpostModule', [ 'services.EnrollmentService', 'services.Foru
                   //                }
                });
 
+               $scope.sortPosts = function() {
+                 impulseService.showNotification("Posting Sort", "Sorting has not been implemented yet."); 
+               };
+               
                $scope.closePostEditor = function() {
                   var msg = "Are you sure you want exit the post editor?";
 

@@ -2,11 +2,19 @@
    <div class="moduleHeading">
       {{headingText}}
       <span class="controlbar">
-         <label ng-if="viewMode === 'O'" for="orderBox">order by:</label>
-         <select ng-if="viewMode === 'O'" id="orderBox" class="form-control" ng-model="orderBy">
-            <option value="forumName">Forum Name</option>
-            <option value="postingDate">Posting Date</option>
-         </select>
+         <label ng-if="viewMode === 'O'">order by:</label>
+          <div ng-if="viewMode === 'O'" class="btn-group" dropdown>
+            <button type="button" dropdown-toggle class="btn btn-default btn-sm dropdown-toggle"
+               style="width: 100%; height: 28px; text-align: left;">
+               <span style="padding-right: 5px;">Forum Name</span>
+               <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" style="margin: 0;" role="menu">
+               <li><a href="" ng-click="sortPosts()">Forum Name</a></li>
+               <li><a href="" ng-click="sortPosts()">Posting Date</a></li>
+            </ul>
+         </div>
+ 
          <input ng-if="viewMode !== 'E'" type="text" class="form-control" placeholder="Search">
          <button ng-if="viewMode === 'P' && isCollaborator && currentForum.isMember" class="btn btn-xs btn-success" ng-click="newPost()">New Post</button>
          <button ng-if="viewMode === 'P'" class="btn btn-xs btn-primary" ng-click="setViewMode('O')">Done</button>
@@ -63,7 +71,7 @@
                </div>
                <div ng-if="!forum.mostRecentPost">
                   There are no posts in the forum.<br> <br>
-                  <a class="post-link pull-right" href="" ng-click="createFirstPost(forum)">Create A
+                  <a ng-if="isCollaborator && forum.isMember" class="post-link pull-right" href="" ng-click="createFirstPost(forum)">Create A
                      New Post</a>
                   <br>
                </div>
