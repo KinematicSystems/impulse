@@ -46,13 +46,13 @@ class AppUtils
    const USER_ERROR_CODE = 98;
    const DB_ERROR_CODE = 99;
    private static $testMode = false;
-   private static $stompMode = true;
+   private static $stompMode = STOMP_EVENTING;
    private static $testUserId = NULL;
    private static $testSessionId = "test-id-123";
    private static $messageTopic = '/topic/chat.general';
    private static $topic = '/topic/';
    private static $xactSession = NULL; // Reuse session within transaction
-    
+   
    /**
     * Send an http response with content encoded as JSON
     *
@@ -177,7 +177,7 @@ class AppUtils
       
       $content = array(
          "sourceUserId" => self::getUserId(),
-          "type" => $eventId,
+         "type" => $eventId,
          "description" => $eventDescription,
          "params" => $eventParameters
       );
@@ -188,7 +188,8 @@ class AppUtils
          try
          {
             $stomp = new Stomp('tcp://localhost:61613', 'admin', 'password');
-            $stomp->send(self::$topic . $eventDomain . '.' . $topicId, $msg, $impulseHeader);
+            $stomp->send(self::$topic . $eventDomain . '.' . $topicId, $msg, 
+               $impulseHeader);
             unset($stomp);
          }
          catch (StompException $e)
@@ -310,12 +311,38 @@ class AppUtils
       {
          // ZEBRA_SESSION
          $link = mysqliConnect();
-         self::$xactSession = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
-        
+         self::$xactSession = new Zebra_Session($link, SESSION_HASH, 
+            SESSION_LIFETIME_SECONDS);
+         
          $_SESSION['userValid'] = 1;
          $_SESSION['userId'] = $userId;
          $_SESSION['userAccessLevel'] = $accessLevel;
          $_SESSION['userAgent'] = md5($_SERVER['HTTP_USER_AGENT']);
+         
+         // ASSIGN VARIABLES TO USER INFO
+         $time = date("M j G:i:s Y");
+         $ip = getenv('REMOTE_ADDR');
+         $userAgent = getenv('HTTP_USER_AGENT');
+         $referrer = getenv('HTTP_REFERER');
+         
+         // COMBINE VARS INTO OUR LOG ENTRY
+         $msg = "USERID: " . $userId . " IP: " . $ip . " TIME: " . $time . " REFERRER: " .
+             $referrer . " USERAGENT: " . $userAgent;
+         
+         //
+         self::writeLoginMsg($msg);
+      }
+   }
+
+   public static function writeLoginMsg($msg)
+   {
+      $logfile = ACCESS_LOG_FILE;
+      $handle = @fopen($logfile, "a");
+      
+      if ($handle)
+      {
+         fwrite($handle, "$msg\r\n");
+         fclose($handle);
       }
    }
 
@@ -333,27 +360,29 @@ class AppUtils
       else
       {
          $session = NULL;
-          
+         
          // ZEBRA_SESSION
          if (isset(self::$xactSession))
-         {   
+         {
             $session = self::$xactSession;
          }
          else
          {
             $link = mysqliConnect();
-            $session = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
-         }   
+            $session = new Zebra_Session($link, SESSION_HASH, 
+               SESSION_LIFETIME_SECONDS);
+         }
          
          if (isset($_SESSION['userId']))
          {
-            //AppUtils::logDebug("Session: getUserId() with id " . $_SESSION['userId']);
+            // AppUtils::logDebug("Session: getUserId() with id " .
+            // $_SESSION['userId']);
             self::$xactSession = $session;
             return $_SESSION['userId'];
          }
          else
          {
-            //AppUtils::logDebug("Session: getUserId() returning NULL");
+            // AppUtils::logDebug("Session: getUserId() returning NULL");
             // Remove the invalid session from database
             $session->stop();
             return NULL;
@@ -375,7 +404,7 @@ class AppUtils
       else
       {
          $session = NULL;
-   
+         
          // ZEBRA_SESSION
          if (isset(self::$xactSession))
          {
@@ -384,9 +413,10 @@ class AppUtils
          else
          {
             $link = mysqliConnect();
-            $session = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
+            $session = new Zebra_Session($link, SESSION_HASH, 
+               SESSION_LIFETIME_SECONDS);
          }
-          
+         
          if (isset($_SESSION['userAccessLevel']))
          {
             self::$xactSession = $session;
@@ -394,14 +424,14 @@ class AppUtils
          }
          else
          {
-            //AppUtils::logDebug("Session: getUserId() returning NULL");
+            // AppUtils::logDebug("Session: getUserId() returning NULL");
             // Remove the invalid session from database
             $session->stop();
             return NULL;
          }
       }
    }
-    
+
    /**
     * Get session ID
     *
@@ -416,7 +446,7 @@ class AppUtils
       else
       {
          $session = NULL;
-          
+         
          // ZEBRA_SESSION
          if (isset(self::$xactSession))
          {
@@ -425,23 +455,24 @@ class AppUtils
          else
          {
             $link = mysqliConnect();
-            $session = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
+            $session = new Zebra_Session($link, SESSION_HASH, 
+               SESSION_LIFETIME_SECONDS);
          }
-
+         
          if (isset($_SESSION['userValid']) && $_SESSION['userValid'])
-         {   
+         {
             self::$xactSession = $session;
-            $sid = session_id(); 
-            //self::logDebug("Returning session id: $sid");  
+            $sid = session_id();
+            // self::logDebug("Returning session id: $sid");
             return $sid;
          }
-         else 
+         else
          {
             // remove this invalid session
             $session->stop();
-            //self::logDebug("Returning session id: NO-SESSION-ID");  
-            return 'NO-SESSION-ID';            
-         }   
+            // self::logDebug("Returning session id: NO-SESSION-ID");
+            return 'NO-SESSION-ID';
+         }
       }
    }
 
@@ -460,7 +491,7 @@ class AppUtils
       {
          // ZEBRA_SESSION
          $session = NULL;
-          
+         
          if (isset(self::$xactSession))
          {
             $session = self::$xactSession;
@@ -468,22 +499,22 @@ class AppUtils
          else
          {
             $link = mysqliConnect();
-            $session = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
+            $session = new Zebra_Session($link, SESSION_HASH, 
+               SESSION_LIFETIME_SECONDS);
          }
-          
          
          if (isset($_SESSION['userValid']) && $_SESSION['userValid'] &&
              isset($_SESSION['userAgent']) &&
              ($_SESSION['userAgent'] == md5($_SERVER['HTTP_USER_AGENT'])))
          {
-//             AppUtils::logDebug(
-//                "Session isLoggedIn() with validity  " . $_SESSION['userValid']);
+            // AppUtils::logDebug(
+            // "Session isLoggedIn() with validity " . $_SESSION['userValid']);
             self::$xactSession = $session;
             return true;
          }
          else
          {
-//            AppUtils::logDebug("Session isLoggedIn() retuning false");
+            // AppUtils::logDebug("Session isLoggedIn() retuning false");
             // remove this invalid session
             $session->stop();
             return false;
@@ -499,7 +530,8 @@ class AppUtils
       if (!self::$testMode)
       {
          // This is handled by cascading delete in database schema
-         // This way if the GC deletes the session the event subscriptions will be cleaned up
+         // This way if the GC deletes the session the event subscriptions will
+         // be cleaned up
          // $userId = self::getUserId();
          // if (isset($userId))
          // {
@@ -513,12 +545,13 @@ class AppUtils
           * variables session_destroy();
           */
          $link = mysqliConnect();
-         $session = new Zebra_Session($link, SESSION_HASH, SESSION_LIFETIME_SECONDS);
+         $session = new Zebra_Session($link, SESSION_HASH, 
+            SESSION_LIFETIME_SECONDS);
          $session->stop();
          self::$xactSession = NULL;
       }
    }
-   
+
    /**
     * purge any sessions left around by users who had no activity
     * and did not log out.
@@ -530,13 +563,11 @@ class AppUtils
          $pdo = getPDO();
          $sql = "DELETE FROM session_data WHERE UNIX_TIMESTAMP() > session_expire";
          $stmt = $pdo->prepare($sql);
-          $stmt->execute();
+         $stmt->execute();
       }
       catch (Exception $e)
       {
          throw $e;
       }
-      
    }
-    
 }

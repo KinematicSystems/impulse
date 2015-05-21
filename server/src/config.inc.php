@@ -37,6 +37,8 @@ define('DB_PASSWORD', 'csptech');
 define('DB_HOST', '127.0.0.1');
 define('SESSION_HASH', 'iMpulSe321#@');
 define('SESSION_LIFETIME_SECONDS', 1200); // 20 minutes
+define('STOMP_EVENTING', true); // true for STOMP false for IMPULSE eventing services
+define('ACCESS_LOG_FILE', '/src/www/impulse_access_log.txt'); // path and filename for user access log file
 
 define('__ROOT__', dirname(dirname(__FILE__)));
 
