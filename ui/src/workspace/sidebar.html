@@ -14,16 +14,16 @@
       <span ng-if="!$parent.sidebarCollapsed">File Explorer</span>
     </a>
   </div>
+  <div class="sidebarItem">
+    <a href="" id="sidebarPost" ng-click="$parent.currentPage='forumpost'">
+       <span class="glyphicon glyphicon-book" title="Forums"></span>
+       <span ng-if="!$parent.sidebarCollapsed">Forums</span>
+    </a>
+  </div>
  <div  class="sidebarItem">
     <a id="sidebarDashboard" href="" ng-click="$parent.currentPage='dashboard'">
        <span class="glyphicon glyphicon-dashboard" title="Dashboard"></span>
        <span ng-if="!$parent.sidebarCollapsed">Dashboard</span>
-    </a>
-  </div>
-  <div class="sidebarItem">
-    <a href="" id="sidebarPost" ng-click="$parent.currentPage='forumpost'">
-       <span class="glyphicon glyphicon-book" title="Forum Post"></span>
-       <span ng-if="!$parent.sidebarCollapsed">Forum Posts</span>
     </a>
   </div>
   <div  class="sidebarItem">
